@@ -110,7 +110,7 @@ function runLib(obj_lib) {
         }
         
 //         var run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
-        var run_lib = spawn('python3', ['lib_lgu_lte', '/dev/ttyUSB1', '115200'] );
+        var run_lib = spawn('python3', ['lib_lgu_lte.py', '/dev/ttyUSB1', '115200'] );
 
         run_lib.stdout.on('data', function(data) {
             console.log('stdout: ' + data);
