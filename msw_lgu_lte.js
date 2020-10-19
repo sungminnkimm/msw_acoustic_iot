@@ -138,7 +138,7 @@ var mqtt_client = null;
 msw_mqtt_connect('localhost', 1883);
 mqtt_connect('203.253.128.161', 1883);
 
-function msw_mqtt_connect(broker_ip, port) {
+function mqtt_connect(broker_ip, port) {
     if(mqtt_client == null) {
         var connectOptions = {
             host: broker_ip,
@@ -163,7 +163,7 @@ function msw_mqtt_connect(broker_ip, port) {
             for(idx in msw_sub_fc_topic) {
                 if(msw_sub_fc_topic.hasOwnProperty(idx)) {
                     mqtt_client.subscribe(msw_sub_fc_topic[idx]);
-                    console.log('[msw_mqtt] msw_sub_fc_topic[' + idx + ']: ' + msw_sub_fc_topic[idx]);
+                    console.log('[mqtt] msw_sub_fc_topic[' + idx + ']: ' + msw_sub_fc_topic[idx]);
                 }
             }
         });
