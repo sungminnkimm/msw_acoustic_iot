@@ -62,11 +62,11 @@ catch (e) {
 var msw_sub_muv_topic = [];
 
 var msw_sub_fc_topic = [];
-msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/disarm');
-// msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/heartbeat');
-// msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/global_position_int');
-// msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/attitude');
-// msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/battery_status');
+// msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/disarm');
+msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/heartbeat');
+msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/global_position_int');
+msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/attitude');
+msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/battery_status');
 
 var msw_sub_lib_topic = [];
 
@@ -134,57 +134,8 @@ function runLib(obj_lib) {
 }
 
 var msw_mqtt_client = null;
-var mqtt_client = null;
 
 msw_mqtt_connect('localhost', 1883);
-mqtt_connect('203.253.128.161', 1883);
-
-function mqtt_connect(broker_ip, port) {
-    if(mqtt_client == null) {
-        var connectOptions = {
-            host: broker_ip,
-            port: port,
-//              username: 'keti',
-//              password: 'keti123',
-            protocol: "mqtt",
-            keepalive: 10,
-//              clientId: serverUID,
-            protocolId: "MQTT",
-            protocolVersion: 4,
-            clean: true,
-            reconnectPeriod: 2000,
-            connectTimeout: 2000,
-            rejectUnauthorized: false
-        };
-
-        mqtt_client = mqtt.connect(connectOptions);
-
-        mqtt_client.on('connect', function () {
-            console.log('[mqtt_connect] connected to ' + broker_ip);
-            for(idx in msw_sub_fc_topic) {
-                if(msw_sub_fc_topic.hasOwnProperty(idx)) {
-                    mqtt_client.subscribe(msw_sub_fc_topic[idx]);
-                    console.log('[mqtt] msw_sub_fc_topic[' + idx + ']: ' + msw_sub_fc_topic[idx]);
-                }
-            }
-        });
-
-        mqtt_client.on('message', function (topic, message) {
-            for(idx in msw_sub_fc_topic) {
-                if (msw_sub_fc_topic.hasOwnProperty(idx)) {
-                    if(topic == msw_sub_fc_topic[idx]) {
-                        setTimeout(on_process_fc_data, parseInt(Math.random() * 5), topic, message.toString('hex'));
-                        break;
-                    }
-                }
-            }
-        });
-
-        mqtt_client.on('error', function (err) {
-            console.log(err.message);
-        });
-    }
-}
 
 function msw_mqtt_connect(broker_ip, port) {
     if(msw_mqtt_client == null) {
@@ -208,12 +159,12 @@ function msw_mqtt_connect(broker_ip, port) {
 
         msw_mqtt_client.on('connect', function () {
             console.log('[msw_mqtt_connect] connected to ' + broker_ip);
-            // for(idx in msw_sub_fc_topic) {
-            //     if(msw_sub_fc_topic.hasOwnProperty(idx)) {
-            //         msw_mqtt_client.subscribe(msw_sub_fc_topic[idx]);
-            //         console.log('[msw_mqtt] msw_sub_fc_topic[' + idx + ']: ' + msw_sub_fc_topic[idx]);
-            //     }
-            // }
+            for(idx in msw_sub_fc_topic) {
+                if(msw_sub_fc_topic.hasOwnProperty(idx)) {
+                    msw_mqtt_client.subscribe(msw_sub_fc_topic[idx]);
+                    console.log('[msw_mqtt] msw_sub_fc_topic[' + idx + ']: ' + msw_sub_fc_topic[idx]);
+                }
+            }
         });
 
         msw_mqtt_client.on('message', function (topic, message) {
@@ -235,14 +186,14 @@ function msw_mqtt_connect(broker_ip, port) {
                 }
             }
 
-            // for(idx in msw_sub_fc_topic) {
-            //     if (msw_sub_fc_topic.hasOwnProperty(idx)) {
-            //         if(topic == msw_sub_fc_topic[idx]) {
-            //             setTimeout(on_process_fc_data, parseInt(Math.random() * 5), topic, message.toString());
-            //             break;
-            //         }
-            //     }
-            // }
+            for(idx in msw_sub_fc_topic) {
+                if (msw_sub_fc_topic.hasOwnProperty(idx)) {
+                    if(topic == msw_sub_fc_topic[idx]) {
+                        setTimeout(on_process_fc_data, parseInt(Math.random() * 5), topic, message.toString('hex'));
+                        break;
+                    }
+                }
+            }
         });
 
         msw_mqtt_client.on('error', function (err) {
