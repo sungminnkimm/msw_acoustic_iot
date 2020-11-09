@@ -231,11 +231,11 @@ function parseDataMission(topic, str_message) {
     try {
         // User define Code
         var obj_lib_data = JSON.parse(str_message);
-        console.log('global_position_int: ', fc['global_position_int']);
+        // console.log('global_position_int: ', fc['global_position_int']);
         if(fc.hasOwnProperty('global_position_int')) {
             Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
         }
-        console.log('\r\n ', obj_lib_data);
+        // console.log('\r\n ', obj_lib_data);
 
         str_message = JSON.stringify(obj_lib_data);
 
