@@ -189,7 +189,7 @@ function msw_mqtt_connect(broker_ip, port) {
             for(idx in msw_sub_fc_topic) {
                 if (msw_sub_fc_topic.hasOwnProperty(idx)) {
                     if(topic == msw_sub_fc_topic[idx]) {
-                        setTimeout(on_process_fc_data, parseInt(Math.random() * 5), topic, message.toString('hex'));
+                        setTimeout(on_process_fc_data, parseInt(Math.random() * 5), topic, message.toString());
                         break;
                     }
                 }
@@ -262,7 +262,7 @@ function parseControlMission(topic, str_message) {
         msw_mqtt_client.publish(_topic, str_message);
     }
     catch (e) {
-        console.log('[parseDataMission] data format of lib is not json');
+        console.log('[parseControlMission] data format of lib is not json');
     }
 }
 
