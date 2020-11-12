@@ -62,7 +62,6 @@ catch (e) {
 var msw_sub_muv_topic = [];
 
 var msw_sub_fc_topic = [];
-// msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/disarm');
 msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/heartbeat');
 msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/global_position_int');
 msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/attitude');
@@ -118,14 +117,20 @@ function runLib(obj_lib) {
 
         run_lib.stderr.on('data', function(data) {
             console.log('stderr: ' + data);
+
+            setTimeout(init, 1000);
         });
 
         run_lib.on('exit', function(code) {
             console.log('exit: ' + code);
+
+            setTimeout(init, 1000);
         });
 
         run_lib.on('error', function(code) {
             console.log('error: ' + code);
+
+            setTimeout(init, 1000);
         });
     }
     catch (e) {
@@ -231,12 +236,9 @@ function parseDataMission(topic, str_message) {
     try {
         // User define Code
         var obj_lib_data = JSON.parse(str_message);
-        console.log('global_position_int: ', fc['global_position_int']);
         if(fc.hasOwnProperty('global_position_int')) {
             Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
         }
-        console.log('\r\n ', obj_lib_data);
-
         str_message = JSON.stringify(obj_lib_data);
 
         ///////////////////////////////////////////////////////////////////////
