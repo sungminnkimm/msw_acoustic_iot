@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 import json, sys, serial, threading
 import paho.mqtt.client as mqtt
-import psutil
+import os
 
-ps
+i_pid = os.getpid()
 argv = sys.argv
 
 missionPort = None
@@ -90,7 +90,7 @@ def missionPortClose():
 
 def missionPortError(err):
     print('[missionPort error]: ', err)
-
+    i_pid.kill()
 
 
 def lteReqGetRssi():
@@ -116,7 +116,7 @@ def missionPortData():
 
         if (end_data == 'OK'):
             arrLTEQ = missionStr[1].decode("utf-8").split(", ")
-            print('origin Data : \n', arrLTEQ)
+
             for idx in range(len(arrLTEQ)):
                 arrQValue = arrLTEQ[idx].split(':')
                 if (arrQValue[0] == '@DBG'):
