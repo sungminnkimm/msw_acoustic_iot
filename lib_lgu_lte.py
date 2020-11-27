@@ -147,6 +147,8 @@ def missionPortData(missionPort):
             lteReqGetRssi(missionPort)
             missionStr = missionPort.readlines()
 
+            print ('original data : \n', missionStr)
+
             arrLTEQ = missionStr[1].decode("utf-8").split(", ")
             print(arrLTEQ)
             arrQValue_0 = arrLTEQ[0].split(':')
