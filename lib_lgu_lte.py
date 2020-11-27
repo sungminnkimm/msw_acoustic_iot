@@ -99,15 +99,12 @@ def missionPortOpening(missionPort, missionPortNum, missionBaudrate):
 
             return missionPort
 
-        except serial.SerialException as e:
-            missionPortError(e)
         except TypeError as e:
             missionPortClose()
     else:
         if (missionPort.is_open == False):
             missionPortOpen()
 
-            # lteQ.rssi = -Math.random()*100;
             container_name = lib["name"]
             data_topic = '/MUV/data/' + lib["name"] + '/' + container_name
             send_data_to_msw(data_topic, lteQ)
@@ -149,6 +146,7 @@ def missionPortData(missionPort):
 
             print ('original data : \n', missionStr)
             print(missionStr[0].decode('utf-8'))
+            print(missionStr[-1].decode('utf-8'))
             print("AT@DBG\n")
             if (missionStr[0].decode('utf-8') == "AT@DBG"):
                 print("Ture")
@@ -223,16 +221,19 @@ def missionPortData(missionPort):
             # print ('lteQ: \n', lteQ)
 
             container_name = lib["data"][0]
-            data_topic = '/MUV/data/' + lib["name"] + '/' + container_name
+            data_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][0]
             lteQ = json.dumps(lteQ)
             '''
-            data_topic = '/MUV/data/' + lib["name"] + '/' + container_name
+            data_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][0]
             send_data_to_msw(data_topic, lteQ)
 
             lteQ = json.loads(lteQ)
 
         except (TypeError, ValueError):
             lteQ_init()
+
+        except serial.SerialException as e:
+            missionPortError(e)
 
 
 if __name__ == '__main__':
