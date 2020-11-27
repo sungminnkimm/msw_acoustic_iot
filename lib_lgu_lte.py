@@ -8,10 +8,6 @@ argv = sys.argv
 missionPort = None
 lteQ = {}
 
-g_lte_event = 0x00
-
-LTE_DATA = 0x01
-
 def lteQ_init():
     global lteQ
 
@@ -87,8 +83,6 @@ def missionPortOpening(missionPortNum, missionBaudrate):
             # )
             # mission_thread.start()
 
-            return missionPort
-
         except TypeError as e:
             missionPortClose()
     else:
@@ -136,6 +130,7 @@ def missionPortData():
 
         if (end_data == 'OK'):
             arrLTEQ = missionStr[1].decode("utf-8").split(", ")
+            print('origin Data : \n', arrLTEQ)
             for idx in range(len(arrLTEQ)):
                 arrQValue = arrLTEQ[idx].split(':')
                 if (arrQValue[0] == '@DBG'):
