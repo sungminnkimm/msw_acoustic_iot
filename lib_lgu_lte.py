@@ -147,6 +147,7 @@ def missionPortData(missionPort):
             print ('original data : \n', missionStr)
             end_data = str(missionStr[-1].decode('utf-8'))
             print(type(end_data)
+
             if (end_data == 'OK'):
                 print("Ture")
             else:
