@@ -118,8 +118,6 @@ function runLib(obj_lib) {
 
         run_lib.stderr.on('data', function(data) {
             console.log('stderr: ' + data);
-
- //           setTimeout(runLib, 3000);
         });
 
         run_lib.on('exit', function(code) {
@@ -130,8 +128,6 @@ function runLib(obj_lib) {
 
         run_lib.on('error', function(code) {
             console.log('error: ' + code);
-
- //           setTimeout(runLib, 3000);
         });
     }
     catch (e) {
