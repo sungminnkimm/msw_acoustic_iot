@@ -218,7 +218,7 @@ def missionPortData(missionPort):
                 elif (arrQValue_1_data[0] == 'MSISDN'):
                     lteQ['missdn'] = int(arrQValue_1_data[1])
             '''
-            # print ('lteQ: \n', lteQ)
+            print ('lteQ: \n', lteQ)
 
             container_name = lib["data"][0]
             data_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][0]
