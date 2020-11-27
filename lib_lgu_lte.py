@@ -144,7 +144,7 @@ def missionPortData(missionPort):
 
     while True:
         try:
-            lteReqGetRssi(missionPort)
+            # lteReqGetRssi(missionPort)
             missionStr = missionPort.readlines()
 
             print ('original data : \n', missionStr)
