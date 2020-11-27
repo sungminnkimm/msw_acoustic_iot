@@ -148,7 +148,7 @@ def missionPortData(missionPort):
             missionStr = missionPort.readlines()
 
             print ('original data : \n', missionStr)
-
+            print(missionStr[0].decode('utf-8'))
             if (missionStr[0].decode('utf-8') == 'AT@DBG'):
                 print("Ture")
             else:
