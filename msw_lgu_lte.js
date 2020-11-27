@@ -125,7 +125,7 @@ function runLib(obj_lib) {
         run_lib.on('exit', function(code) {
             console.log('exit: ' + code);
 
-            // setTimeout(runLib, 3000, obj_lib)
+            setTimeout(runLib, 3000, obj_lib)
         });
 
         run_lib.on('error', function(code) {
@@ -215,7 +215,7 @@ function on_receive_from_muv(topic, str_message) {
 }
 
 function on_receive_from_lib(topic, str_message) {
-    // console.log('[' + topic + '] ' + str_message);
+    console.log('[' + topic + '] ' + str_message);
 
     parseDataMission(topic, str_message);
 }

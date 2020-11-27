@@ -151,74 +151,45 @@ def missionPortData(missionPort):
 
             if (end_data == 'OK'):
                 arrLTEQ = missionStr[1].decode("utf-8").split(", ")
-                print ('arrLTEQ data : \n', arrLTEQ)
+                for idx in range(len(arrLTEQ)):
+                    arrQValue = arrLTEQ[idx].split(':')
+                    if (arrQValue[0] == '@DBG'):
+                        lteQ['frequency'] = int(arrQValue[2])
+                    elif (arrQValue[0] == 'Band'):
+                        lteQ['band'] = int(arrQValue[1])
+                    elif (arrQValue[0] == 'BW'):
+                        lteQ['bandwidth'] = int(arrQValue[1][:-3])
+                    elif (arrQValue[0] == 'Cell ID'):
+                        lteQ['cell_id'] = arrQValue[1]
+                    elif (arrQValue[0] == 'RSRP'):
+                        lteQ['rsrp'] = float(arrQValue[1][:-3])
+                    elif (arrQValue[0] == 'RSSI'):
+                        lteQ['rssi'] = float(arrQValue[1][:-3])
+                    elif (arrQValue[0] == 'RSRQ'):
+                        lteQ['rsrq'] = float(arrQValue[1][:-2])
+                    elif (arrQValue[0] == 'BLER'):
+                        lteQ['bler'] = float(arrQValue[1][:-2])
+                    elif (arrQValue[0] == 'Tx Power'):
+                        lteQ['tx_power'] = int(arrQValue[1])
+                    elif (arrQValue[0] == 'PLMN'):
+                        lteQ['plmn'] = arrQValue[1]
+                    elif (arrQValue[0] == 'TAC'):
+                        lteQ['tac'] = int(arrQValue[1])
+                    elif (arrQValue[0] == 'DRX cycle length'):
+                        lteQ['drx'] = int(arrQValue[1])
+                    elif (arrQValue[0] == 'EMM state'):
+                        lteQ['emm_state'] = arrQValue[1]
+                    elif (arrQValue[0] == 'RRC state'):
+                        lteQ['rrc_state'] = arrQValue[1]
+                    elif (arrQValue[0] == 'Net OP Mode'):
+                        lteQ['net_op_mode'] = arrQValue[1]
+                    elif (arrQValue[0] == 'EMM Cause'):
+                        lteQ['emm_cause'] = int(arrQValue[1])
+                    elif (arrQValue[0] == 'ESM Cause'):
+                        lteQ['esm_cause'] = arrQValue[1].split(",")[0]
             else:
                 pass
-            '''
-            arrLTEQ = missionStr[1].decode("utf-8").split(", ")
-            print(arrLTEQ)
-            arrQValue_0 = arrLTEQ[0].split(':')
-            if (arrQValue_0[0] == '@DBG'):
-                    lteQ['earfcn_dl'] = arrQValue_0[2].split(',')[0].split('/')[0]
-                    lteQ['earfcn_ul'] = arrQValue_0[2].split(',')[0].split('/')[1]
-                    lteQ['rf_state'] = arrQValue_0[3]
-            arrQValue_1 = arrLTEQ[1].split(',')
-            for idx in range(len(arrQValue_1)):
-                arrQValue_1_data = arrQValue_1[idx].split(':')
-                if (arrQValue_1_data[0] == 'BAND'):
-                    lteQ['band'] = int(arrQValue_1_data[1])
-                elif (arrQValue_1_data[0] == 'BW'):
-                    lteQ['bandwidth'] = int(arrQValue_1_data[1][:-3])
-                elif (arrQValue_1_data[0] == 'PLMN'):
-                    lteQ['plmn'] = int(arrQValue_1_data[1])
-                elif (arrQValue_1_data[0] == 'TAC'):
-                    lteQ['tac'] = int(arrQValue_1_data[1])
-                elif (arrQValue_1_data[0] == 'Cell(PCI)'):
-                    lteQ['cell_id'] = arrQValue_1_data[1]
-                elif (arrQValue_1_data[0] == 'ESM CAUSE'):
-                    lteQ['esm_cause'] = int(arrQValue_1_data[1])
-                elif (arrQValue_1_data[0] == 'DRX'):
-                    lteQ['drx'] = int(arrQValue_1_data[1][:-2])
-                elif (arrQValue_1_data[0] == 'RSRP'):
-                    lteQ['rsrp'] = float(arrQValue_1_data[1])
-                elif (arrQValue_1_data[0] == 'RSRQ'):
-                    lteQ['rsrq'] = float(arrQValue_1_data[1])
-                elif (arrQValue_1_data[0] == 'RSSI'):
-                    lteQ['rssi'] = float(arrQValue_1_data[1])
-                elif (arrQValue_1_data[0] == 'L2W'):
-                    lteQ['l2w'] = arrQValue_1_data[1]
-                elif (arrQValue_1_data[0] == 'RI'):
-                    lteQ['ri'] = int(arrQValue_1_data[1])
-                elif (arrQValue_1_data[0] == 'CQI'):
-                    lteQ['cqi'] = int(arrQValue_1_data[1])
-                elif (arrQValue_1_data[0] == 'STATUS'):
-                    lteQ['status'] = arrQValue_1_data[1]
-                elif (arrQValue_1_data[0] == 'SUB STATUS'):
-                    lteQ['sub_status'] = arrQValue_1_data[1]
-                elif (arrQValue_1_data[0] == 'RRC'):
-                    lteQ['rrc'] = arrQValue_1_data[1]
-                elif (arrQValue_1_data[0] == 'SVC'):
-                    lteQ['svc'] = arrQValue_1_data[1]
-                elif (arrQValue_1_data[0] == 'SINR'):
-                    try:
-                        lteQ['sinr'] = float(arrQValue_1_data[1])
-                    except ValueError:
-                        lteQ['sinr'] = 0.0
-                elif (arrQValue_1_data[0] == 'Tx Pwr'):
-                    lteQ['tx_pwr'] = int(arrQValue_1_data[1])
-                elif (arrQValue_1_data[0] == 'TMSI'):
-                    lteQ['tmsi'] = arrQValue_1_data[1]
-                elif (arrQValue_1_data[0] == 'IP'):
-                    lteQ['ip'] = arrQValue_1_data[1]
-                elif (arrQValue_1_data[0] == 'AVG RSRP'):
-                    lteQ['avg_rsrp'] = float(arrQValue_1_data[1])
-                elif (arrQValue_1_data[0] == 'ANTBAR'):
-                    lteQ['antbar'] = int(arrQValue_1_data[1])
-                elif (arrQValue_1_data[0] == 'IMSI'):
-                    lteQ['imsi'] = int(arrQValue_1_data[1])
-                elif (arrQValue_1_data[0] == 'MSISDN'):
-                    lteQ['missdn'] = int(arrQValue_1_data[1])
-            '''
+
             print ('lteQ: \n', lteQ)
 
             container_name = lib["data"][0]
