@@ -44,6 +44,8 @@ def lteQ_init():
     lteQ['imsi'] = 0
     lteQ['missdn'] = 0
 
+
+
 def on_connect(client,userdata,flags, rc):
     if rc == 0:
         print('[msw_mqtt_connect] connect to ', broker_ip)
@@ -56,7 +58,8 @@ def on_disconnect(client, userdata, flags, rc=0):
 
 
 def on_publish(client, userdata, mid):
-    print("In on_pub callback mid= ", mid)
+    i = 1
+    # print("In on_pub callback mid= ", mid)
 
 
 def on_subscribe(client, userdata, mid, granted_qos):
@@ -137,22 +140,20 @@ def missionPortData(missionPort):
     global lteQ
 
     # lteQ = dict()
-    lteQ = lteQ_init()
+    lteQ_init()
 
     while True:
         try:
             lteReqGetRssi(missionPort)
             missionStr = missionPort.readlines()
 
-            print ('original data : \n', missionStr)
-            end_data = str(missionStr[-1].decode('utf-8'))
-            print(type(end_data))
+            end_data = (missionStr[-1].decode('utf-8'))[:-2]
 
             if (end_data == 'OK'):
-                print("Ture")
+                arrLTEQ = missionStr[1].decode("utf-8").split(", ")
+                print ('arrLTEQ data : \n', arrLTEQ)
             else:
-                print(end_data)
-                print("False")
+                pass
             '''
             arrLTEQ = missionStr[1].decode("utf-8").split(", ")
             print(arrLTEQ)
