@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import json, sys, serial, threading
 import paho.mqtt.client as mqtt
-import os, psutil, signal
+import os, signal
 
 i_pid = os.getpid()
 argv = sys.argv
