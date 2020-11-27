@@ -6,7 +6,6 @@ import os, signal
 i_pid = os.getpid()
 argv = sys.argv
 
-missionPort = None
 lteQ = {}
 
 def lteQ_init():
@@ -74,11 +73,11 @@ def missionPortOpening(missionPortNum, missionBaudrate):
         if (missionPort.is_open == False):
             missionPortOpen()
 
-            container_name = lib["name"]
-            data_topic = '/MUV/data/' + lib["name"] + '/' + container_name
+            data_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][0]
             send_data_to_msw(data_topic, lteQ)
 
 def missionPortOpen():
+    global missionPort
     print('missionPort open!')
     missionPort.open()
 
@@ -95,12 +94,15 @@ def missionPortError(err):
 
 def lteReqGetRssi():
     global missionPort
+
     if missionPort is not None:
         if missionPort.is_open:
             atcmd = b'AT@DBG\r'
             missionPort.write(atcmd)
 
 def send_data_to_msw (data_topic, obj_data):
+    global lib_mqtt_client
+
     lib_mqtt_client.publish(data_topic, obj_data)
 
 
@@ -172,6 +174,8 @@ def missionPortData():
 
 
 if __name__ == '__main__':
+    global missionPort
+
     my_lib_name = 'lib_lgu_lte'
 
     try:
@@ -207,7 +211,6 @@ if __name__ == '__main__':
     missionPortNum = lib["serialPortNum"]
     missionBaudrate = lib["serialBaudrate"]
     missionPortOpening(missionPortNum, missionBaudrate)
-
 
     while True:
         missionPortData()
