@@ -145,7 +145,7 @@ def missionPortData(missionPort):
             missionStr = missionPort.readlines()
 
             print ('original data : \n', missionStr)
-            end_data = missionStr[-1].decode('utf-8')
+            end_data = str(missionStr[-1].decode('utf-8'))
             if (end_data == 'OK'):
                 print("Ture")
             else:
