@@ -217,14 +217,13 @@ def missionPortData(missionPort):
                     lteQ['imsi'] = int(arrQValue_1_data[1])
                 elif (arrQValue_1_data[0] == 'MSISDN'):
                     lteQ['missdn'] = int(arrQValue_1_data[1])
-
+            '''
             # print ('lteQ: \n', lteQ)
 
             container_name = lib["data"][0]
             data_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][0]
             lteQ = json.dumps(lteQ)
-            '''
-            data_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][0]
+
             send_data_to_msw(data_topic, lteQ)
 
             lteQ = json.loads(lteQ)
