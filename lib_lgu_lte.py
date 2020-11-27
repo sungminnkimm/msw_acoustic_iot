@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import json, sys, serial, threading
 import paho.mqtt.client as mqtt
-import os
+import os, psutil
 
 i_pid = os.getpid()
 argv = sys.argv
@@ -90,7 +90,7 @@ def missionPortClose():
 
 def missionPortError(err):
     print('[missionPort error]: ', err)
-    i_pid.kill()
+    os.kill(i_pid)
 
 
 def lteReqGetRssi():
