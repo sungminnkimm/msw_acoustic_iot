@@ -149,10 +149,11 @@ def missionPortData(missionPort):
 
             print ('original data : \n', missionStr)
             print(missionStr[0].decode('utf-8'))
-            print("AT@DBG")
+            print("AT@DBG\n")
             if (missionStr[0].decode('utf-8') == "AT@DBG"):
                 print("Ture")
             else:
+                print(missionStr[0].decode('utf-8'))
                 print("False")
             '''
             arrLTEQ = missionStr[1].decode("utf-8").split(", ")
