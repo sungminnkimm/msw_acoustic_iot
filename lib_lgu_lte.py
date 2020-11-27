@@ -149,7 +149,8 @@ def missionPortData(missionPort):
 
             print ('original data : \n', missionStr)
             print(missionStr[0].decode('utf-8'))
-            if (missionStr[0].decode('utf-8') == 'AT@DBG'):
+            print("AT@DBG")
+            if (missionStr[0].decode('utf-8') == "AT@DBG"):
                 print("Ture")
             else:
                 print("False")
@@ -224,6 +225,7 @@ def missionPortData(missionPort):
             data_topic = '/MUV/data/' + lib["name"] + '/' + container_name
             lteQ = json.dumps(lteQ)
             '''
+            data_topic = '/MUV/data/' + lib["name"] + '/' + container_name
             send_data_to_msw(data_topic, lteQ)
 
             lteQ = json.loads(lteQ)
