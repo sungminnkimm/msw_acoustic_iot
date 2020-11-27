@@ -211,7 +211,8 @@ if __name__ == '__main__':
     missionPortOpening(missionPortNum, missionBaudrate)
 
 
-    # while True:
+    while True:
+        i = 2
         # missionPortData()
 
 # python -m PyInstaller lib_lgu_lte.py
