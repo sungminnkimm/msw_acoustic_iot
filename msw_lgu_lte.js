@@ -17,6 +17,7 @@
 var mqtt = require('mqtt');
 var fs = require('fs');
 var spawn = require('child_process').spawn;
+console.log('\r\n'+my_sortie_name+'\r\n');
 
 var my_msw_name = 'msw_lgu_lte';
 
@@ -99,7 +100,6 @@ function init() {
 }
 
 function runLib(obj_lib) {
-    console.log('\r\n'+my_sortie_name+'\r\n');
     try {
         var scripts_arr = obj_lib.scripts.split(' ');
         if(config.directory_name == '') {
