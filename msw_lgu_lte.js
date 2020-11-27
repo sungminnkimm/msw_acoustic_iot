@@ -1,275 +1,245 @@
-/**
- * Created by Il Yeup, Ahn in KETI on 2020-09-04.
- */
+#!/usr/bin/python3
+import json, sys, serial, threading
+import paho.mqtt.client as mqtt
+from time import sleep
 
-/**
- * Copyright (c) 2020, OCEAN
- * All rights reserved.
- * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
- * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote products derived from this software without specific prior written permission.
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+argv = sys.argv
 
-// for TAS of mission
+global lib_topic
+global lib_mqtt_client
 
-var mqtt = require('mqtt');
-var fs = require('fs');
-var spawn = require('child_process').spawn;
+global missionPort
+global lteQ
 
-var my_msw_name = 'msw_lgu_lte';
+def lteQ_init():
+    global lteQ
 
-var fc = {};
-var config = {};
+    lteQ = dict()
+    lteQ['earfcn_dl'] = ""
+    lteQ['earfcn_ul'] = ""
+    lteQ['rf_state'] = ""
+    lteQ['band'] = 0
+    lteQ['bandwidth'] = 0
+    lteQ['plmn'] = 0
+    lteQ['tac'] = 0
+    lteQ['cell_id'] = ""
+    lteQ['esm_cause'] = 0
+    lteQ['drx'] = 0
+    lteQ['rsrp'] = 0.0
+    lteQ['rsrq'] = 0.0
+    lteQ['rssi'] = 0.0
+    lteQ['l2w'] = ""
+    lteQ['ri'] = 0
+    lteQ['cqi'] = 0
+    lteQ['status'] = ""
+    lteQ['sub_status'] = ""
+    lteQ['rrc'] = ""
+    lteQ['svc'] = ""
+    lteQ['sinr'] = 0.0
+    lteQ['tx_pwr'] = 0
+    lteQ['tmsi'] = ""
+    lteQ['ip'] = ""
+    lteQ['avg_rsrp'] = 0.0
+    lteQ['antbar'] = 0
+    lteQ['imsi'] = 0
+    lteQ['missdn'] = 0
 
-config.name = my_msw_name;
 
-try {
-    config.directory_name = msw_directory[my_msw_name];
-    config.sortie_name = '/' + my_sortie_name;
-    config.gcs = drone_info.gcs;
-    config.drone = drone_info.drone;
-    config.lib = [];
-}
-catch (e) {
-    config.sortie_name = '';
-    config.directory_name = '';
-    config.gcs = 'KETI_MUV';
-    config.drone = 'FC_MUV_01';
-    config.lib = [];
-}
 
-// library 추가
-var add_lib = {};
-try {
-    add_lib = JSON.parse(fs.readFileSync('./' + config.directory_name + '/lib_sparrow_lte.json', 'utf8'));
-    config.lib.push(add_lib);
-}
-catch (e) {
-    add_lib = {
-        name: 'lib_lgu_lte',
-        target: 'armv6',
-        description: "[name] [portnum] [baudrate]",
-        scripts: './lib_lgu_lte /dev/ttyUSB1 115200',
-        data: ['LTE'],
-        control: []
-    };
-    config.lib.push(add_lib);
-}
-// msw가 muv로 부터 트리거를 받는 용도
-// 명세에 sub_container 로 표기
-var msw_sub_muv_topic = [];
+def on_connect(client,userdata,flags, rc):
+    if rc == 0:
+        print('[msw_mqtt_connect] connect to ', broker_ip)
+    else:
+        print("Bad connection Returned code=", rc)
 
-var msw_sub_fc_topic = [];
-msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/heartbeat');
-msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/global_position_int');
-msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/attitude');
-msw_sub_fc_topic.push('/Mobius/' + config.gcs + '/Drone_Data/' + config.drone + '/battery_status');
 
-var msw_sub_lib_topic = [];
+def on_disconnect(client, userdata, flags, rc=0):
+	print(str(rc))
 
-function init() {
-    if(config.lib.length > 0) {
-        for(var idx in config.lib) {
-            if(config.lib.hasOwnProperty(idx)) {
-                if (msw_mqtt_client != null) {
-                    for (var i = 0; i < config.lib[idx].control.length; i++) {
-                        var sub_container_name = config.lib[idx].control[i];
-                        _topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + sub_container_name;
-                        msw_mqtt_client.subscribe(_topic);
-                        msw_sub_muv_topic.push(_topic);
-                        console.log('[msw_mqtt] msw_sub_muv_topic[' + i + ']: ' + _topic);
-                    }
 
-                    for (var i = 0; i < config.lib[idx].data.length; i++) {
-                        var container_name = config.lib[idx].data[i];
-                        var _topic = '/MUV/data/' + config.lib[idx].name + '/' + container_name;
-                        msw_mqtt_client.subscribe(_topic);
-                        msw_sub_lib_topic.push(_topic);
-                        console.log('[lib_mqtt] lib_topic[' + i + ']: ' + _topic);
-                    }
-                }
+def on_publish(client, userdata, mid):
+    i = 1
+    # print("In on_pub callback mid= ", mid)
 
-                var obj_lib = config.lib[idx];
-                setTimeout(runLib, 1000 + parseInt(Math.random()*10), JSON.parse(JSON.stringify(obj_lib)));
-            }
-        }
-    }
-}
 
-function runLib(obj_lib) {
-    try {
-        var scripts_arr = obj_lib.scripts.split(' ');
-        if(config.directory_name == '') {
+def on_subscribe(client, userdata, mid, granted_qos):
+    print("subscribed: " + str(mid) + " " + str(granted_qos))
 
-        }
-        else {
-            scripts_arr[0] = scripts_arr[0].replace('./', '');
-            scripts_arr[0] = './' + config.directory_name + '/' + scripts_arr[0];
-        }
 
-        var run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
+def on_message(client, userdata, msg):
+    print(str(msg.payload.decode("utf-8")))
 
-        run_lib.stdout.on('data', function(data) {
-            console.log('stdout: ' + data);
-        });
 
-        run_lib.stderr.on('data', function(data) {
-            console.log('stderr: ' + data);
-        });
+def msw_mqtt_connect(broker_ip, port):
+    global lib_topic
+    global lib_mqtt_client
 
-        run_lib.on('exit', function(code) {
-            console.log('exit: ' + code);
+    lib_topic = ''
 
-            setTimeout(runLib, 3000, obj_lib)
-        });
+    lib_mqtt_client = mqtt.Client()
+    lib_mqtt_client.on_connect = on_connect
+    lib_mqtt_client.on_disconnect = on_disconnect
+    lib_mqtt_client.on_publish = on_publish
+    lib_mqtt_client.on_message = on_message
+    lib_mqtt_client.connect(broker_ip, port)
+    # lib_mqtt_client.subscribe(lib_topic, 0)
+    lib_mqtt_client.loop_start()
+    return lib_mqtt_client
 
-        run_lib.on('error', function(code) {
-            console.log('error: ' + code);
-        });
-    }
-    catch (e) {
-        console.log(e.message);
-    }
-}
 
-var msw_mqtt_client = null;
+def missionPortOpening(missionPort, missionPortNum, missionBaudrate):
+    global lteQ
+    global lib
 
-msw_mqtt_connect('localhost', 1883);
+    if (missionPort == None):
+        try:
+            missionPort = serial.Serial(missionPortNum, missionBaudrate, timeout = 2)
+            print ('missionPort open. ' + missionPortNum + ' Data rate: ' + missionBaudrate)
+            # mission_thread = threading.Thread(
+            #     target=missionPortData, args=(missionPort,)
+            # )
+            # mission_thread.start()
 
-function msw_mqtt_connect(broker_ip, port) {
-    if(msw_mqtt_client == null) {
-        var connectOptions = {
-            host: broker_ip,
-            port: port,
-//              username: 'keti',
-//              password: 'keti123',
-            protocol: "mqtt",
-            keepalive: 10,
-//              clientId: serverUID,
-            protocolId: "MQTT",
-            protocolVersion: 4,
-            clean: true,
-            reconnectPeriod: 2000,
-            connectTimeout: 2000,
-            rejectUnauthorized: false
-        };
+            return missionPort
 
-        msw_mqtt_client = mqtt.connect(connectOptions);
+        except TypeError as e:
+            missionPortClose()
+    else:
+        if (missionPort.is_open == False):
+            missionPortOpen()
 
-        msw_mqtt_client.on('connect', function () {
-            console.log('[msw_mqtt_connect] connected to ' + broker_ip);
-            for(idx in msw_sub_fc_topic) {
-                if(msw_sub_fc_topic.hasOwnProperty(idx)) {
-                    msw_mqtt_client.subscribe(msw_sub_fc_topic[idx]);
-                    console.log('[msw_mqtt] msw_sub_fc_topic[' + idx + ']: ' + msw_sub_fc_topic[idx]);
-                }
-            }
-        });
+            container_name = lib["name"]
+            data_topic = '/MUV/data/' + lib["name"] + '/' + container_name
+            send_data_to_msw(data_topic, lteQ)
 
-        msw_mqtt_client.on('message', function (topic, message) {
-            for(var idx in msw_sub_muv_topic) {
-                if (msw_sub_muv_topic.hasOwnProperty(idx)) {
-                    if(topic == msw_sub_muv_topic[idx]) {
-                        setTimeout(on_receive_from_muv, parseInt(Math.random() * 5), topic, message.toString());
-                        break;
-                    }
-                }
-            }
+def missionPortOpen():
+    print('missionPort open!')
+    missionPort.open()
 
-            for(idx in msw_sub_lib_topic) {
-                if (msw_sub_lib_topic.hasOwnProperty(idx)) {
-                    if(topic == msw_sub_lib_topic[idx]) {
-                        setTimeout(on_receive_from_lib, parseInt(Math.random() * 5), topic, message.toString());
-                        break;
-                    }
-                }
-            }
+def missionPortClose():
+    global missionPort
+    print('missionPort closed!')
+    missionPort.close()
 
-            for(idx in msw_sub_fc_topic) {
-                if (msw_sub_fc_topic.hasOwnProperty(idx)) {
-                    if(topic == msw_sub_fc_topic[idx]) {
-                        setTimeout(on_process_fc_data, parseInt(Math.random() * 5), topic, message.toString());
-                        break;
-                    }
-                }
-            }
-        });
 
-        msw_mqtt_client.on('error', function (err) {
-            console.log(err.message);
-        });
-    }
-}
+def missionPortError(err):
+    print('[missionPort error]: ', err)
 
-function on_receive_from_muv(topic, str_message) {
-    // console.log('[' + topic + '] ' + str_message);
 
-    parseControlMission(topic, str_message);
-}
+def lteReqGetRssi(missionPort):
+    if missionPort is not None:
+        if missionPort.is_open:
+            atcmd = b'AT@DBG\r'
+            missionPort.write(atcmd)
 
-function on_receive_from_lib(topic, str_message) {
-    console.log('[' + topic + '] ' + str_message);
+def send_data_to_msw (data_topic, obj_data):
+    lib_mqtt_client.publish(data_topic, obj_data)
 
-    parseDataMission(topic, str_message);
-}
 
-function on_process_fc_data(topic, str_message) {
-    // console.log('[' + topic + '] ' + str_message);
+def missionPortData(missionPort):
+    global lteQ
 
-    var topic_arr = topic.split('/');
-    fc[topic_arr[topic_arr.length-1]] = JSON.parse(str_message);
+    # lteQ = dict()
+    lteQ_init()
 
-    parseFcData(topic, str_message);
-}
+    while True:
+        try:
+            lteReqGetRssi(missionPort)
+            missionStr = missionPort.readlines()
 
-setTimeout(init, 1000);
+            end_data = (missionStr[-1].decode('utf-8'))[:-2]
 
-// 유저 디파인 미션 소프트웨어 기능
-///////////////////////////////////////////////////////////////////////////////
-function parseDataMission(topic, str_message) {
-    try {
-        // User define Code
-        var obj_lib_data = JSON.parse(str_message);
-        if(fc.hasOwnProperty('global_position_int')) {
-            Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
-        }
-        str_message = JSON.stringify(obj_lib_data);
+            if (end_data == 'OK'):
+                arrLTEQ = missionStr[1].decode("utf-8").split(", ")
+                for idx in range(len(arrLTEQ)):
+                    arrQValue = arrLTEQ[idx].split(':')
+                    if (arrQValue[0] == '@DBG'):
+                        lteQ['frequency'] = int(arrQValue[2])
+                    elif (arrQValue[0] == 'Band'):
+                        lteQ['band'] = int(arrQValue[1])
+                    elif (arrQValue[0] == 'BW'):
+                        lteQ['bandwidth'] = int(arrQValue[1][:-3])
+                    elif (arrQValue[0] == 'Cell ID'):
+                        lteQ['cell_id'] = arrQValue[1]
+                    elif (arrQValue[0] == 'RSRP'):
+                        lteQ['rsrp'] = float(arrQValue[1][:-3])
+                    elif (arrQValue[0] == 'RSSI'):
+                        lteQ['rssi'] = float(arrQValue[1][:-3])
+                    elif (arrQValue[0] == 'RSRQ'):
+                        lteQ['rsrq'] = float(arrQValue[1][:-2])
+                    elif (arrQValue[0] == 'BLER'):
+                        lteQ['bler'] = float(arrQValue[1][:-2])
+                    elif (arrQValue[0] == 'Tx Power'):
+                        lteQ['tx_power'] = int(arrQValue[1])
+                    elif (arrQValue[0] == 'PLMN'):
+                        lteQ['plmn'] = arrQValue[1]
+                    elif (arrQValue[0] == 'TAC'):
+                        lteQ['tac'] = int(arrQValue[1])
+                    elif (arrQValue[0] == 'DRX cycle length'):
+                        lteQ['drx'] = int(arrQValue[1])
+                    elif (arrQValue[0] == 'EMM state'):
+                        lteQ['emm_state'] = arrQValue[1]
+                    elif (arrQValue[0] == 'RRC state'):
+                        lteQ['rrc_state'] = arrQValue[1]
+                    elif (arrQValue[0] == 'Net OP Mode'):
+                        lteQ['net_op_mode'] = arrQValue[1]
+                    elif (arrQValue[0] == 'EMM Cause'):
+                        lteQ['emm_cause'] = int(arrQValue[1])
+                    elif (arrQValue[0] == 'ESM Cause'):
+                        lteQ['esm_cause'] = arrQValue[1].split(",")[0]
+            else:
+                pass
 
-        ///////////////////////////////////////////////////////////////////////
+            container_name = lib["data"][0]
+            data_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][0]
+            lteQ = json.dumps(lteQ)
 
-        var topic_arr = topic.split('/');
-        var data_topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + topic_arr[topic_arr.length-1];
-        msw_mqtt_client.publish(data_topic + '/' + my_sortie_name, str_message);
-        // msw_mqtt_client.publish(data_topic, str_message);
-    }
-    catch (e) {
-        console.log('[parseDataMission] data format of lib is not json');
-    }
-}
-///////////////////////////////////////////////////////////////////////////////
+            send_data_to_msw(data_topic, lteQ)
 
-function parseControlMission(topic, str_message) {
-    try {
-        // User define Code
-        ///////////////////////////////////////////////////////////////////////
+            lteQ = json.loads(lteQ)
 
-        var topic_arr = topic.split('/');
-        var _topic = '/MUV/control/' + config.lib[0].name + '/' + topic_arr[topic_arr.length - 1];
-        msw_mqtt_client.publish(_topic, str_message);
-    }
-    catch (e) {
-        console.log('[parseControlMission] data format of lib is not json');
-    }
-}
+        except (TypeError, ValueError):
+            lteQ_init()
 
-function parseFcData(topic, str_message) {
-    // User define Code
-    // var topic_arr = topic.split('/');
-    // if(topic_arr[topic_arr.length-1] == 'global_position_int') {
-    //     var _topic = '/MUV/control/' + config.lib[0].name + '/' + config.lib[1].control[1]; // 'Req_enc'
-    //     msw_mqtt_client.publish(_topic, str_message);
-    // }
-    ///////////////////////////////////////////////////////////////////////
-}
+        except serial.SerialException as e:
+            missionPortError(e)
+
+
+if __name__ == '__main__':
+    my_lib_name = 'lib_lgu_lte'
+
+    try:
+        lib = dict()
+        with open(my_lib_name + '.json', 'r') as f:
+            lib = json.load(f)
+            lib = json.loads(lib)
+
+    except:
+        lib = dict()
+        lib["name"] = my_lib_name
+        lib["target"] = 'armv6'
+        lib["description"] = "[name] [portnum] [baudrate]"
+        lib["scripts"] = './' + my_lib_name + ' /dev/ttyUSB1 115200'
+        lib["data"] = ['LTE']
+        lib["control"] = []
+        lib = json.dumps(lib, indent=4)
+        lib = json.loads(lib)
+
+        with open('./' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
+            json.dump(lib, json_file, indent=4)
+
+
+    lib['serialPortNum'] = argv[1]
+    lib['serialBaudrate'] = argv[2]
+
+    broker_ip = 'localhost'
+    port = 1883
+
+    msw_mqtt_connect(broker_ip, port)
+
+    missionPort = None
+    missionPortNum = lib["serialPortNum"]
+    missionBaudrate = lib["serialBaudrate"]
+    missionPortOpening(missionPort, missionPortNum, missionBaudrate)
+
+# python -m PyInstaller lib_lgu_lte.py
