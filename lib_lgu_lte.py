@@ -29,7 +29,6 @@ def lteQ_init():
     lteQ['emm_cause'] = 0
     lteQ['esm_cause'] = ""
 
-
 #---MQTT----------------------------------------------------------------
 def on_connect(client,userdata,flags, rc):
     if rc == 0:
@@ -212,7 +211,7 @@ if __name__ == '__main__':
     missionPortOpening(missionPortNum, missionBaudrate)
 
 
-    while True:
-        missionPortData()
+    # while True:
+        # missionPortData()
 
 # python -m PyInstaller lib_lgu_lte.py
