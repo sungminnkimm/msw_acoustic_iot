@@ -99,6 +99,7 @@ function init() {
 }
 
 function runLib(obj_lib) {
+    console.log('\r\n' + my_sortie_name + '\r\n')
     try {
         var scripts_arr = obj_lib.scripts.split(' ');
         if(config.directory_name == '') {
@@ -109,7 +110,8 @@ function runLib(obj_lib) {
             scripts_arr[0] = './' + config.directory_name + '/' + scripts_arr[0];
         }
 
-        var run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
+        // var run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
+        var run_lib = spawn('python3', [scripts_arr[0]+'.py', '/dev/ttyUSB1', '115200']);
 
         run_lib.stdout.on('data', function(data) {
             console.log('stdout: ' + data);
