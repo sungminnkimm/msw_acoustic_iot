@@ -66,10 +66,6 @@ def missionPortOpening(missionPortNum, missionBaudrate):
         try:
             missionPort = serial.Serial(missionPortNum, missionBaudrate, timeout = 2)
             print ('missionPort open. ' + missionPortNum + ' Data rate: ' + missionBaudrate)
-            # mission_thread = threading.Thread(
-            #     target=missionPortData, args=(missionPort,)
-            # )
-            # mission_thread.start()
 
         except TypeError as e:
             missionPortClose()
@@ -212,7 +208,6 @@ if __name__ == '__main__':
 
 
     while True:
-        i = 2
-        # missionPortData()
+        missionPortData()
 
 # python -m PyInstaller lib_lgu_lte.py
