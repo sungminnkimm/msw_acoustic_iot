@@ -17,7 +17,6 @@
 var mqtt = require('mqtt');
 var fs = require('fs');
 var spawn = require('child_process').spawn;
-console.log('\r\n'+my_sortie_name+'\r\n');
 
 var my_msw_name = 'msw_lgu_lte';
 
