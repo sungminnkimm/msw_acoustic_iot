@@ -30,6 +30,8 @@ else {
     var my_sortie_name = my_sortie_name
 }
 
+console.log(my_sortie_name);
+
 config.name = my_msw_name;
 
 try {
