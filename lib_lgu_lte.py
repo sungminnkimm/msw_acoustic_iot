@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import json, sys, serial, threading
 import paho.mqtt.client as mqtt
-import os, signal
+import os, signal, time
 
 i_pid = os.getpid()
 argv = sys.argv
@@ -209,9 +209,19 @@ if __name__ == '__main__':
     missionPort = None
     missionPortNum = lib["serialPortNum"]
     missionBaudrate = lib["serialBaudrate"]
-    missionPortOpening(missionPortNum, missionBaudrate)
+#     missionPortOpening(missionPortNum, missionBaudrate)
 
     while True:
-        missionPortData()
+#         missionPortData()
+        data_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][0]
 
+        lteQ = {"frequency": 100, "band": 1, "bandwidth": 20, "cell_id": "451(0x1c3)", "rsrp": -100, "rssi": 69,
+                "rsrq": -11, "bler": 0, "tx_power": 9, "plmn": "450f06", "tac": 16893, "drx": 2560,
+                "emm_state": "REGISTERED", "rrc_state": "CONNECTED", "net_op_mode": "CS_PS_MODE1", "emm_cause": 18,
+                "esm_cause": "0", "time_boot_ms": 12507067, "lat": 0, "lon": 0, "alt": 6590, "vx": 0, "vy": 0, "vz": 0,
+                "hdg": 65535, "relative_alt": 6594}
+        lteQ = json.dumps(lteQ)
+
+        send_data_to_msw(data_topic, lteQ)
+        time.sleep(2)
 # python -m PyInstaller lib_lgu_lte.py
