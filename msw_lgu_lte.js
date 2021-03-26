@@ -33,19 +33,18 @@ catch (e) {                             // for nCube-MUV-Python
 config.name = my_msw_name;
 
 try {
-    try {
+    try {           // for nCube-MUV (NodeJs)
         config.directory_name = msw_directory[my_msw_name];
         config.sortie_name = '/' + sortie_name;
         config.gcs = drone_info.gcs;
         config.drone = drone_info.drone;
         config.lib = [];
     }
-    catch (e) {
-        var drone_information = JSON.parse(process.argv[3])
-        config.directory_name = msw_directory[my_msw_name];
+    catch (e) {     // for nCube-MUV-Python
+        config.directory_name = process.argv[3];
         config.sortie_name = '/' + sortie_name;
-        config.gcs = drone_information.gcs;
-        config.drone = drone_information.drone;
+        config.gcs = process.argv[4];
+        config.drone = process.argv[5];
         config.lib = [];
     }
 }
@@ -250,16 +249,16 @@ function parseDataMission(topic, str_message) {
     try {
         // User define Code
         var obj_lib_data = JSON.parse(str_message);
+
         if(fc.hasOwnProperty('global_position_int')) {
             Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
         }
         str_message = JSON.stringify(obj_lib_data);
-
         ///////////////////////////////////////////////////////////////////////
 
         var topic_arr = topic.split('/');
         var data_topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + topic_arr[topic_arr.length-1];
-        msw_mqtt_client.publish(data_topic + '/' + my_sortie_name, str_message);
+        msw_mqtt_client.publish(data_topic + '/' + sortie_name, str_message);
         // msw_mqtt_client.publish(data_topic, str_message);
     }
     catch (e) {
