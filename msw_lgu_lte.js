@@ -23,6 +23,13 @@ var my_msw_name = 'msw_lgu_lte';
 var fc = {};
 var config = {};
 
+if (my_sortie_name == null) {
+    var my_sortie_name = process.argv[2]
+    }
+else {
+    var my_sortie_name = my_sortie_name
+}
+
 config.name = my_msw_name;
 
 try {
