@@ -23,25 +23,31 @@ var my_msw_name = 'msw_lgu_lte';
 var fc = {};
 var config = {};
 
-console.log(my_sortie_name);
-
-if (my_sortie_name == null) {         // for nCube-MUV-Python
-    var sortie_name = process.argv[2]
-    }
-else {                                // for nCube-MUV (NodeJs)
-    var sortie_name = my_sortie_name
+try {                                   // for nCube-MUV (NodeJs)
+    sortie_name = my_sortie_name
 }
-
-console.log(sortie_name);
+catch (e) {                             // for nCube-MUV-Python
+    var sortie_name = process.argv[2]
+}
 
 config.name = my_msw_name;
 
 try {
-    config.directory_name = msw_directory[my_msw_name];
-    config.sortie_name = '/' + sortie_name;
-    config.gcs = drone_info.gcs;
-    config.drone = drone_info.drone;
-    config.lib = [];
+    try {
+        config.directory_name = msw_directory[my_msw_name];
+        config.sortie_name = '/' + sortie_name;
+        config.gcs = drone_info.gcs;
+        config.drone = drone_info.drone;
+        config.lib = [];
+    }
+    catch (e) {
+        var drone_information = JSON.parse(process.argv[3])
+        config.directory_name = msw_directory[my_msw_name];
+        config.sortie_name = '/' + sortie_name;
+        config.gcs = drone_information.gcs;
+        config.drone = drone_information.drone;
+        config.lib = [];
+    }
 }
 catch (e) {
     config.sortie_name = '';
