@@ -23,20 +23,22 @@ var my_msw_name = 'msw_lgu_lte';
 var fc = {};
 var config = {};
 
-if (my_sortie_name == null) {
-    var my_sortie_name = process.argv[2]
+console.log(my_sortie_name);
+
+if (my_sortie_name == null) {         // for nCube-MUV-Python
+    var sortie_name = process.argv[2]
     }
-else {
-    var my_sortie_name = my_sortie_name
+else {                                // for nCube-MUV (NodeJs)
+    var sortie_name = my_sortie_name
 }
 
-console.log(my_sortie_name);
+console.log(sortie_name);
 
 config.name = my_msw_name;
 
 try {
     config.directory_name = msw_directory[my_msw_name];
-    config.sortie_name = '/' + my_sortie_name;
+    config.sortie_name = '/' + sortie_name;
     config.gcs = drone_info.gcs;
     config.drone = drone_info.drone;
     config.lib = [];
@@ -119,7 +121,7 @@ function runLib(obj_lib) {
         }
 
 //         var run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
-        var run_lib = spawn('python3', [scripts_arr[0]+'.py', '/dev/ttyUSB1', '115200']);
+        var run_lib = spawn('python', [scripts_arr[0]+'.py', '/dev/ttyUSB1', '115200']);
 
         run_lib.stdout.on('data', function(data) {
             console.log('stdout: ' + data);
