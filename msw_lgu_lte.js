@@ -64,10 +64,10 @@ try {
 }
 catch (e) {
     add_lib = {
-        name: 'lib_lgu_lte',
+        name: 'lib_hello.py',
         target: 'armv6',
         description: "[name] [portnum] [baudrate]",
-        scripts: './lib_lgu_lte /dev/ttyUSB1 115200',
+        scripts: './lib_hello.py /dev/ttyUSB1 115200',
         data: ['LTE'],
         control: []
     };
