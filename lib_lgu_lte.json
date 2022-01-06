@@ -1,8 +1,8 @@
 {
-    "name": "lib_lgu_lte.py",
+    "name": "lib_lgu_lte",
     "target": "armv6",
     "description": "[name] [portnum] [baudrate]",
-    "scripts": "python ./lib_lgu_lte.py",
+    "scripts": "./lib_lgu_lte",
     "data": [
         "LTE"
     ],
