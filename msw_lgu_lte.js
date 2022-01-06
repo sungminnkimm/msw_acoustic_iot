@@ -64,10 +64,10 @@ try {
 }
 catch (e) {
     add_lib = {
-        name: 'lib_lgu_lte.py',
+        name: 'lib_lgu_lte',
         target: 'armv6',
         description: "[name] [portnum] [baudrate]",
-        scripts: 'python lib_lgu_lte.py',
+        scripts: './lib_lgu_lte',
         data: ['LTE'],
         control: []
     };
@@ -126,9 +126,10 @@ function runLib(obj_lib) {
         }
 
 //         var run_lib = spawn('sudo', scripts_arr.slice(0));
-        var run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
+//        var run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
 //         var run_lib = spawn('python3', [scripts_arr[0]+'.py', '/dev/ttyUSB1', '115200']);
-
+        var run_lib = spawn('python3', [scripts_arr[0]+'.py']);
+        
         run_lib.stdout.on('data', function(data) {
             console.log('stdout: ' + data);
         });
