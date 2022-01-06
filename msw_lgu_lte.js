@@ -59,7 +59,7 @@ catch (e) {
 // library 추가
 var add_lib = {};
 try {
-    add_lib = JSON.parse(fs.readFileSync('./' + config.directory_name + '/lib_lgu_lte.json', 'utf8'));
+    add_lib = JSON.parse(fs.readFileSync('./' + config.directory_name + '/lib_lgu_lte.py', 'utf8'));
     config.lib.push(add_lib);
 }
 catch (e) {
