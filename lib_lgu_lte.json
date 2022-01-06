@@ -1,8 +1,8 @@
 {
-    "name": "lib_lgu_lte",
+    "name": "lib_lgu_lte.py",
     "target": "armv6",
     "description": "[name] [portnum] [baudrate]",
-    "scripts": "./lib_lgu_lte /dev/ttyUSB1 115200",
+    "scripts": "./lib_lgu_lte.py /dev/ttyUSB1 115200",
     "data": [
         "LTE"
     ],
