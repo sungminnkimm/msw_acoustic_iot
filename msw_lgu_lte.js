@@ -59,15 +59,15 @@ catch (e) {
 // library 추가
 var add_lib = {};
 try {
-    add_lib = JSON.parse(fs.readFileSync('./' + config.directory_name + '/lib_lgu_lte.py', 'utf8'));
+    add_lib = JSON.parse(fs.readFileSync('./' + config.directory_name + '/lib_lgu_lte.json', 'utf8'));
     config.lib.push(add_lib);
 }
 catch (e) {
     add_lib = {
-        name: 'lib_lgu_lte',
+        name: 'lib_lgu_lte.py',
         target: 'armv6',
         description: "[name] [portnum] [baudrate]",
-        scripts: './lib_lgu_lte /dev/ttyUSB1 115200',
+        scripts: 'python lib_lgu_lte.py',
         data: ['LTE'],
         control: []
     };
