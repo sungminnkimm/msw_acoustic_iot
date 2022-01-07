@@ -2,7 +2,7 @@
     "name": "lib_lgu_lte",
     "target": "armv6",
     "description": "[name] [portnum] [baudrate]",
-    "scripts": "./lib_lgu_lte /dev/ttyUSB3 115200 OP 7",
+    "scripts": "./lib_lgu_lte /dev/ttyUSB3 115200",
     "data": [
         "LTE"
     ],

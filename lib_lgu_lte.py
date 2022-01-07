@@ -54,7 +54,7 @@ def msw_mqtt_connect(broker_ip, port):
     lib_mqtt_client.on_disconnect = on_disconnect
     lib_mqtt_client.on_message = on_message
     lib_mqtt_client.connect(broker_ip, port)
-    lib_mqtt_client.subscribe('/Mobius/MUV/approval/Apollo/con/mission/msw_lgu_lte/sub_container/', 1)
+    lib_mqtt_client.subscribe('/MUV/control/msw_lgu_lte/test', 1)
 
     lib_mqtt_client.loop_start()
 #-----------------------------------------------------------------------
@@ -136,7 +136,6 @@ def cellAction(missionCmd):
 
 if __name__ == '__main__':
     global missionPort
-    global mqtt_received
 
     my_lib_name = 'lib_lgu_lte'
 
@@ -175,7 +174,6 @@ if __name__ == '__main__':
         missionPortNum = lib["serialPortNum"]
         missionBaudrate = lib["serialBaudrate"]
 
-    if 
     # missionCmd = parseMissionData()
 
     # missionPortOpening(missionPortNum, missionBaudrate)
