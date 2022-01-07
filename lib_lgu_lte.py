@@ -7,11 +7,13 @@ i_pid = os.getpid()
 argv = sys.argv
 
 cellQ = {}
+mqtt_received = False
 
 #open OP0101\r\n close CL0101\r\n
 def cartridge_init():
     global cellQ
 
+    print("[lib_lge_lte]: initializing cartridge")
     cellQ['0101'] = "CL"
     cellQ['0202'] = "CL"
     cellQ['0303'] = "CL"
@@ -24,31 +26,37 @@ def cartridge_init():
     
     
 #---MQTT----------------------------------------------------------------
-# def on_connect(client,userdata,flags, rc):
-#     if rc == 0:
-#         print('[msw_mqtt_connect] connect to ', broker_ip)
-#     else:
-#         print("Bad connection Returned code=", rc)
+def on_connect(client,userdata,flags, rc):
+    if rc == 0:
+        print('[msw_mqtt_connect] connect to ', broker_ip)
+    else:
+        print("Bad connection Returned code=", rc)
 
 
-# def on_disconnect(client, userdata, flags, rc=0):
-# 	print(str(rc))
+def on_disconnect(client, userdata, flags, rc=0):
+	print(str(rc))
 
 
-# def on_message(client, userdata, msg):
-#     print(str(msg.payload.decode("utf-8")))
+def on_message(client, userdata, msg):
+    global mqtt_received
 
+    print("[lib_lgu_lte.py]: mqtt msg received")
+    print(str(msg.payload.decode("utf-8")))
 
-# def msw_mqtt_connect(broker_ip, port):
-#     global lib_mqtt_client
+    mqtt_received = True
+    
 
-#     lib_mqtt_client = mqtt.Client()
-#     lib_mqtt_client.on_connect = on_connect
-#     lib_mqtt_client.on_disconnect = on_disconnect
-#     lib_mqtt_client.on_message = on_message
-#     lib_mqtt_client.connect(broker_ip, port)
+def msw_mqtt_connect(broker_ip, port):
+    global lib_mqtt_client
 
-#     lib_mqtt_client.loop_start()
+    lib_mqtt_client = mqtt.Client()
+    lib_mqtt_client.on_connect = on_connect
+    lib_mqtt_client.on_disconnect = on_disconnect
+    lib_mqtt_client.on_message = on_message
+    lib_mqtt_client.connect(broker_ip, port)
+    lib_mqtt_client.subscribe('/Mobius/MUV/approval/Apollo/con/mission/msw_lgu_lte/sub_container/', 1)
+
+    lib_mqtt_client.loop_start()
 #-----------------------------------------------------------------------
 
 def missionPortOpening(missionPortNum, missionBaudrate):
@@ -128,6 +136,7 @@ def cellAction(missionCmd):
 
 if __name__ == '__main__':
     global missionPort
+    global mqtt_received
 
     my_lib_name = 'lib_lgu_lte'
 
@@ -153,26 +162,29 @@ if __name__ == '__main__':
 
     lib['serialPortNum'] = argv[1]
     lib['serialBaudrate'] = argv[2]
-    lib['serialCmd'] = tuple(argv[3], argv[4])
+    
 
     broker_ip = 'localhost'
     port = 1883
-    # msw_mqtt_connect(broker_ip, port)
+    msw_mqtt_connect(broker_ip, port)
 
-    cartridge_init()
+    if mqtt_received:
+        cartridge_init()
 
-    missionPort = None
-    missionPortNum = lib["serialPortNum"]
-    missionBaudrate = lib["serialBaudrate"]
-    missionCmd = lib['serialCmd']
-    
-    missionPortOpening(missionPortNum, missionBaudrate)
+        missionPort = None
+        missionPortNum = lib["serialPortNum"]
+        missionBaudrate = lib["serialBaudrate"]
 
-    cellAction(missionCmd)
+    if 
+    # missionCmd = parseMissionData()
 
-    missionPortClose()
+    # missionPortOpening(missionPortNum, missionBaudrate)
 
-    # while True:
+    # cellAction(missionCmd)
+
+    # missionPortClose()
+
+    # while mqtt_received:
         # missionPortData()
         
         
