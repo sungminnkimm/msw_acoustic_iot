@@ -67,9 +67,9 @@ catch (e) {
         name: 'lib_lgu_lte',
         target: 'armv6',
         description: "[name] [portnum] [baudrate]",
-        scripts: './lib_lgu_lte',
+        scripts: './lib_lgu_lte /dev/ttyUSB3 115200',
         data: ['LTE'],
-        control: []
+        control: [test]
     };
     config.lib.push(add_lib);
 }
@@ -260,8 +260,8 @@ function parseDataMission(topic, str_message) {
 
         var topic_arr = topic.split('/');
         var data_topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + topic_arr[topic_arr.length-1];
-        msw_mqtt_client.publish(data_topic + '/' + sortie_name, str_message);
-        // msw_mqtt_client.publish(data_topic, str_message);
+        // msw_mqtt_client.publish(data_topic + '/' + sortie_name, str_message);
+        msw_mqtt_client.publish(data_topic, str_message);
     }
     catch (e) {
         console.log('[parseDataMission] data format of lib is not json');

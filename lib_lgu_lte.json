@@ -6,5 +6,7 @@
     "data": [
         "LTE"
     ],
-    "control": []
+    "control": [
+        "test"
+    ]
 }

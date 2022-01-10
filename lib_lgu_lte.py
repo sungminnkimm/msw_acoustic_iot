@@ -2,12 +2,12 @@
 import json, sys, serial, threading
 import paho.mqtt.client as mqtt
 import os, signal
+import time
 
 i_pid = os.getpid()
 argv = sys.argv
 
 cellQ = {}
-mqtt_received = False
 
 #open OP0101\r\n close CL0101\r\n
 def cartridge_init():
@@ -42,7 +42,9 @@ def on_message(client, userdata, msg):
 
     print("[lib_lgu_lte.py]: mqtt msg received")
     print(str(msg.payload.decode("utf-8")))
-
+    with open('test.txt', 'w') as f:
+        f.write("written by mqtt")
+    f.close()
     mqtt_received = True
     
 
@@ -136,6 +138,9 @@ def cellAction(missionCmd):
 
 if __name__ == '__main__':
     global missionPort
+    global mqtt_received
+
+    mqtt_received = False
 
     my_lib_name = 'lib_lgu_lte'
 
@@ -143,13 +148,14 @@ if __name__ == '__main__':
         lib = dict()
         with open(my_lib_name + '.json', 'r') as f:
             lib = json.load(f)
+            
             lib = json.loads(lib)
     except:
         lib = dict()
         lib["name"] = my_lib_name
         lib["target"] = 'armv6'
         lib["description"] = "[name] [portnum] [baudrate]"
-        lib["scripts"] = './' + my_lib_name + ' /dev/ttyUSB3 115200 OP 7'
+        lib["scripts"] = './' + my_lib_name + ' /dev/ttyUSB3 115200'
         lib["data"] = ['LTE']
         lib["control"] = []
         lib = json.dumps(lib, indent=4)
@@ -167,12 +173,20 @@ if __name__ == '__main__':
     port = 1883
     msw_mqtt_connect(broker_ip, port)
 
-    if mqtt_received:
-        cartridge_init()
-
-        missionPort = None
-        missionPortNum = lib["serialPortNum"]
-        missionBaudrate = lib["serialBaudrate"]
+    cartridge_init()
+    
+    while 1:
+        if mqtt_received == False:
+            print('=================heyo')
+            missionPort = None
+            missionPortNum = lib["serialPortNum"]
+            missionBaudrate = lib["serialBaudrate"]
+            time.sleep(1)
+        else: 
+            with open('test.txt', 'w') as f:
+                f.write('mqtt client functional!')
+            f.close()
+            mqtt_received = False
 
     # missionCmd = parseMissionData()
 
