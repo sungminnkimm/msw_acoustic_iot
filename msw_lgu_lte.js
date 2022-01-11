@@ -69,7 +69,7 @@ catch (e) {
         description: "[name] [portnum] [baudrate]",
         scripts: './lib_lgu_lte /dev/ttyUSB3 115200',
         data: ['LTE'],
-        control: [test]
+        control: ['test']
     };
     config.lib.push(add_lib);
 }
@@ -92,7 +92,8 @@ function init() {
                 if (msw_mqtt_client != null) {
                     for (var i = 0; i < config.lib[idx].control.length; i++) {
                         var sub_container_name = config.lib[idx].control[i];
-                        _topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + sub_container_name;
+                        //config.name missing in the original code
+                        _topic = '/Mobius/' + config.gcs + '/Mission_Data/' + config.drone + '/' + config.name + '/' + sub_container_name;
                         msw_mqtt_client.subscribe(_topic);
                         msw_sub_muv_topic.push(_topic);
                         console.log('[msw_mqtt] msw_sub_muv_topic[' + i + ']: ' + _topic);
@@ -108,7 +109,7 @@ function init() {
                 }
 
                 var obj_lib = config.lib[idx];
-                setTimeout(runLib, 1000 + parseInt(Math.random()*10), JSON.parse(JSON.stringify(obj_lib)));
+                // setTimeout(runLib, 1000 + parseInt(Math.random()*10), JSON.parse(JSON.stringify(obj_lib)));
             }
         }
     }
@@ -127,8 +128,9 @@ function runLib(obj_lib) {
 
 //         var run_lib = spawn('sudo', scripts_arr.slice(0));
 //        var run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
-//         var run_lib = spawn('python3', [scripts_arr[0]+'.py', '/dev/ttyUSB1', '115200']);
-        var run_lib = spawn('python3', [scripts_arr[0]+'.py']);
+        console.log('python3', [scripts_arr[0]+'.py', '/dev/ttyUSB1', '115200']);
+        var run_lib = spawn('python3', [scripts_arr[0]+'.py', '/dev/ttyUSB1', '115200']);
+//         var run_lib = spawn('python3', [scripts_arr[0]+'.py']);
         
         run_lib.stdout.on('data', function(data) {
             console.log('stdout: ' + data);
@@ -183,6 +185,13 @@ function msw_mqtt_connect(broker_ip, port) {
                 if(msw_sub_fc_topic.hasOwnProperty(idx)) {
                     msw_mqtt_client.subscribe(msw_sub_fc_topic[idx]);
                     console.log('[msw_mqtt] msw_sub_fc_topic[' + idx + ']: ' + msw_sub_fc_topic[idx]);
+                }
+            }
+            
+            for(idx in msw_sub_muv_topic) {
+                if(msw_sub_muv_topic.hasOwnProperty(idx)) {
+                    msw_mqtt_client.subscribe(msw_sub_muv_topic[idx]);
+                    console.log('[msw_mqtt] msw_sub_muv_topic[' + idx + ']: ' + msw_sub_muv_topic[idx]);
                 }
             }
         });

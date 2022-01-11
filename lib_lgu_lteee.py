@@ -102,7 +102,8 @@ def lteReqGetRssi():
 
 def send_data_to_msw (data_topic, obj_data):
     global lib_mqtt_client
-
+    
+    print(data_topic)
     lib_mqtt_client.publish(data_topic, obj_data)
 
 

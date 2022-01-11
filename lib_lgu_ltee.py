@@ -9,7 +9,6 @@ argv = sys.argv
 
 cellQ = {}
 
-
 #open OP0101\r\n close CL0101\r\n
 def cartridge_init():
     global cellQ
@@ -28,8 +27,11 @@ def cartridge_init():
     
 #---MQTT----------------------------------------------------------------
 def on_connect(client,userdata,flags, rc):
+    global is_connected
+    
     if rc == 0:
-        print('[lib_mqtt_connect] connect to', broker_ip)
+        print('[lib_lgu_lte_mqtt] connected to ', broker_ip)
+        is_connected = True
     else:
         print("Bad connection Returned code=", rc)
 
@@ -40,37 +42,27 @@ def on_disconnect(client, userdata, flags, rc=0):
 
 def on_message(client, userdata, msg):
     global mqtt_received
-    global missisonCmd
-    global cellStatus
-    global cellNum
-    
+
     print("[lib_lgu_lte.py]: mqtt msg received")
-    #print(str(msg.payload.decode("utf-8")))
-    missionCmd = str(msg.payload.decode("utf-8"))
-    cellStatus = missionCmd[:2]
-    cellNum = missionCmd[3]
-    print(missionCmd)
+    print(str(msg.payload.decode("utf-8")))
     mqtt_received = True
-    
-    
-def on_subscribe(client, userdata, mid, granted_qos):
-    print("subscribed: " + str(mid) + " " + str(granted_qos))
-    
+ 
+def on_publish(client, userdata, mid):
+	global is_pub
+	print("published")
 
 def msw_mqtt_connect(broker_ip, port):
     global lib_mqtt_client
-    global control_topic
-    
+
     lib_mqtt_client = mqtt.Client()
     lib_mqtt_client.on_connect = on_connect
     lib_mqtt_client.on_disconnect = on_disconnect
     lib_mqtt_client.on_message = on_message
     lib_mqtt_client.connect(broker_ip, port)
-    # topic is supposed to be lib["name"] = lib_lgu_lte
-    control_topic = '/MUV/control/' + lib["name"] + '/' + lib["control"][0]
-    lib_mqtt_client.subscribe(control_topic, 0)
+    lib_mqtt_client.on_publish = on_publish
+    lib_mqtt_client.subscribe('/MUV/control/msw_lgu_lte/test', 0)
+    
     lib_mqtt_client.loop_start()
-    # lib_mqtt_client.loop_forever()
 #-----------------------------------------------------------------------
 
 def missionPortOpening(missionPortNum, missionBaudrate):
@@ -115,24 +107,20 @@ def missionPortError(err):
 #             atcmd = b'AT@DBG\r'
 #             missionPort.write(atcmd)
 
-# def send_data_to_msw (data_topic, obj_data):
-#     global lib_mqtt_client
+def send_data_to_msw (data_topic, obj_data):
+    global lib_mqtt_client
+    lib_mqtt_client.publish(data_topic, obj_data)
 
-#     lib_mqtt_client.publish(data_topic, obj_data)
-
-def cellCmd(status, num):
+def cellAction(missionCmd):
     global missionPort
     global cellQ
-    
-    num_int = int(num)
-    num_str = '0%d' % num_int
-    cellid = num_str + num_str
-    
-    #missionPort.write(missionCmd)
-    cellQ[cellid] = status
-    serialCmd = cellQ[cellid] + cellid + '\r\n'
-    missionPort.write(serialCmd.encode())
-    print(cellQ)
+
+    action = missionCmd[0] 
+    cell_num = missionCmd[1]
+
+    cellQ['0%d0%d' % cell_num] = action
+    print(action + cellQ['0%d0%d' % cell_num])
+    missionPort.write(action + cellQ['0%d0%d' % cell_num])
 
 # def missionPortData():
 #     global missionPort
@@ -142,7 +130,6 @@ def cellCmd(status, num):
 #         # lteReqGetRssi()
 #         missionStr = missionPort.readlines()
 #         print(missionStr)
-#         data_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][0]
 #         # send_data_to_msw(data_topic, lteQ)
 
 #     except (TypeError, ValueError):
@@ -155,18 +142,19 @@ def cellCmd(status, num):
 if __name__ == '__main__':
     global missionPort
     global mqtt_received
-    global cellStatus
-    global cellNum
-    
-    mqtt_received = False
+    global is_connected
+    global is_pub
 
+    mqtt_received = False
+    is_connected = False
+    is_pub = False
+    
     my_lib_name = 'lib_lgu_lte'
 
     try:
         lib = dict()
-        with open(my_lib_name + '.json', 'r') as f:
+        with open(my_lib_name + '.json', 'r', encoding="utf-8") as f:
             lib = json.load(f)
-            
             lib = json.loads(lib)
     except:
         lib = dict()
@@ -175,7 +163,7 @@ if __name__ == '__main__':
         lib["description"] = "[name] [portnum] [baudrate]"
         lib["scripts"] = './' + my_lib_name + ' /dev/ttyUSB3 115200'
         lib["data"] = ['LTE']
-        lib["control"] = ['test']
+        lib["control"] = []
         lib = json.dumps(lib, indent=4)
         lib = json.loads(lib)
 
@@ -186,27 +174,45 @@ if __name__ == '__main__':
     lib['serialPortNum'] = argv[1]
     lib['serialBaudrate'] = argv[2]
     
-    control_topic = ''
-    missionCmd = ''
+
     broker_ip = 'localhost'
     port = 1883
-    
     msw_mqtt_connect(broker_ip, port)
-
+    data_topic = '/MUV/data/msw_lgu_ltelib/LTE'
     cartridge_init()
     
-    missionPort = None
-    missionPortNum = lib["serialPortNum"]
-    missionBaudrate = lib["serialBaudrate"]
-    
-    missionPortOpening(missionPortNum, missionBaudrate)
     
     while 1:
-        if mqtt_received:
-            #print(cellStatus, cellNum)
-            cellCmd(cellStatus, cellNum)
+        if mqtt_received == False:
+            #print("is_connected", is_connected)
+            missionPort = None
+            missionPortNum = lib["serialPortNum"]
+            missionBaudrate = lib["serialBaudrate"]
+            send_data_to_msw(data_topic, "test LTE")
+            #time.sleep(0.5)
+        elif is_pub:
+            with open('test.txt', 'w') as f:
+               f.write('mqtt_pub client functional!')
+            f.close()
+            is_pub = False
+        else:
+            print("mqtt_received", mqtt_received)
+            with open('test.txt', 'w') as f:
+                f.write('mqtt client functional!')
+            f.close()
             mqtt_received = False
-            
-    missionPortClose()
-    
+
+    # missionCmd = parseMissionData()
+
+    # missionPortOpening(missionPortNum, missionBaudrate)
+
+    # cellAction(missionCmd)
+
+    # missionPortClose()
+
+    # while mqtt_received:
+        # missionPortData()
+        
+        
+
 # python -m PyInstaller lib_lgu_lte.py
