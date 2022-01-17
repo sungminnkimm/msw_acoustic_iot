@@ -6,7 +6,7 @@ import time, datetime, base64, requests
 import sched
 
 
-scheduler = sched.scheduler(time.time, time.sleep())
+scheduler = sched.scheduler(time.time, time.sleep)
 i_pid = os.getpid()
 argv = sys.argv
 
