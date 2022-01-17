@@ -1,8 +1,8 @@
 {
-  "name": "msw_lgu_lte",
+  "name": "msw_acoustic_iot",
   "version": "1.0.0",
-  "description": "MSW for measuremet LTE data",
-  "main": "msw_lgu_lte.js",
+  "description": "MSW for deployment of Acoustic IoT",
+  "main": "msw_acoustic_iot.js",
   "dependencies": {
     "mqtt": "^4.2.6"
   },
@@ -12,12 +12,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/IoTKETI/msw_lgu_lte.git"
+    "url": "git+https://github.com/sungminnkimm/msw_acoustic_iot"
   },
-  "author": "Wonseok Jung",
+  "author": "Sungmin Kim",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/IoTKETI/msw_lgu_lte/issues"
+    "url": "https://github.com/sungminnkimm/msw_acoustic_iot/issues"
   },
-  "homepage": "https://github.com/IoTKETI/msw_lgu_lte#readme"
+  "homepage": "https://github.com/sungminnkimm/msw_acoustic_iot#readme"
 }

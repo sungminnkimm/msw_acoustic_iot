@@ -4,7 +4,7 @@
 block_cipher = None
 
 
-a = Analysis(['lib_lgu_lte.py'],
+a = Analysis(['lib_acoustic_iot.py'],
              pathex=[],
              binaries=[],
              datas=[],
@@ -26,7 +26,7 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,  
           [],
-          name='lib_lgu_lte',
+          name='lib_acoustic_iot',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,

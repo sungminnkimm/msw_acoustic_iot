@@ -1,0 +1,12 @@
+{
+    "name": "lib_acoustic_iot",
+    "target": "armv6",
+    "description": "[name] [portnum] [baudrate]",
+    "scripts": "./lib_acoustic_iot /dev/ttyUSB3 115200",
+    "data": [
+        "DropPic"
+    ],
+    "control": [
+        "CartridgeCmd"
+    ]
+}
