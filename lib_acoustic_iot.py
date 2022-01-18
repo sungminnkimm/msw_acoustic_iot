@@ -11,6 +11,7 @@ i_pid = os.getpid()
 argv = sys.argv
 
 cellQ = {}
+pictureQ = {}
 
 # url_Mobius = 'http://[64:FF9B::CBFD:80AC]:7579'
 
@@ -24,6 +25,7 @@ cellQ = {}
 #open OP0101\r\n close CL0101\r\n
 def cartridge_init():
     global cellQ
+    global pictureQ
 
     print("[lib_acoustic_iot]: initializing cartridge")
     cellQ['0101'] = "CL"
@@ -35,7 +37,18 @@ def cartridge_init():
     cellQ['0707'] = "CL"
     cellQ['0808'] = "CL"
     cellQ['0909'] = "CL"
+
+    pictureQ['number'] = 0
+    pictureQ['pid'] = ''
+    pictureQ['seq'] = 0
+    pictureQ['longitude'] = 0.0
+    pictureQ['latitude'] = 0.0
+    pictureQ['altitude'] = 0.0
+    pictureQ['pic'] = ''
     
+    # pictureQ['longitude'] = 127.4567
+    # pictureQ['latitude'] = 37.38382
+    # pictureQ['altitude'] = 32.5
     
 #---MQTT----------------------------------------------------------------
 def on_connect(client,userdata,flags, rc):
@@ -51,16 +64,19 @@ def on_disconnect(client, userdata, flags, rc=0):
 
 def on_message(client, userdata, msg):
     global mqtt_received
-    global missisonCmd
-    global cellStatus
+    # global missisonCmd
+    # global cellStatus
     global cellNum
     
     print("[lib_acoustic_iot]: mqtt msg received")
     #print(str(msg.payload.decode("utf-8")))
     missionCmd = str(msg.payload.decode("utf-8"))
 
-    cellStatus = missionCmd[:2]
-    cellNum = missionCmd[3]
+    cellNum = parseControlData(missionCmd)
+    # cellStatus = missionCmd[:2]
+    # cellNum = missionCmd[3]
+    # cellNum = missionCmd[0]
+
     print(missionCmd)
 
     mqtt_received = True
@@ -81,6 +97,8 @@ def msw_mqtt_connect(broker_ip, port):
     lib_mqtt_client.connect(broker_ip, port)
     # topic is supposed to be lib["name"] = lib_lgu_lte
     control_topic = '/MUV/control/' + lib["name"] + '/' + lib["control"][0]
+    lib_mqtt_client.subscribe(control_topic, 0)
+    position_data_topic = '/MUV/control/' + lib["name"] + '/' + lib["control"][1]
     lib_mqtt_client.subscribe(control_topic, 0)
     lib_mqtt_client.loop_start()
     # lib_mqtt_client.loop_forever()
@@ -119,50 +137,85 @@ def missionPortError(err):
     print('[missionPort error]: ', err)
     os.kill(i_pid, signal.SIGKILL)
 
-def cellCmd(status, num):
+def parseControlData(controlMsg):
+    
+    controlObj = json.dumps(controlMsg)
+    controlObj = json.loads(controlObj)
+
+    # controlObj['msg']
+    # controlObj['deviceId']
+    cell = controlObj['value']
+    return cell
+
+
+def DropDevice(num):
     global missionPort
     global cellQ
+    global pictureQ
     
     num_int = int(num)
     num_str = '0%d' % num_int
     cellid = num_str + num_str
-    
+    pictureQ['pid'] = 'wp%s' % num
     #missionPort.write(missionCmd)
-    cellQ[cellid] = status
+    cellQ[cellid] = 'OP'
     serialCmd = cellQ[cellid] + cellid + '\r\n'
     missionPort.write(serialCmd.encode())
     print(cellQ)
 
-def usbCam(filepath):
-    global lib_mqtt_client
+def usbCam(count):
 
     print("[lib_acoustic_iot]: USB Camera activated")
-    os.system('pkill gpicview')
-    directory = '~/Pictures/'
+    #os.system('pkill gpicview')
+    directory = '/home/pi/Pictures/'
     now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
     filepath = directory + now + '.jpg'
     cmd = "fswebcam -r 1280x720 --no-banner " + filepath
     os.system(cmd)
-    os.system('gpicview ' + filepath + ' &')
-    pub_image(filepath)
+    #os.system('gpicview ' + filepath + ' &')
+    pub_image(filepath, count)
 
+def pub_image(filepath, number):
+    global pictureQ
 
-def wavTobase64(filepath):
+    try: 
+        data_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][0]
+        encoded_data = Tobase64(filepath)
+
+        pictureQ['number'] = number
+        pictureQ['seq'] = 12
+        pictureQ['longitude'] = 127.4567
+        pictureQ['latitude'] = 37.38382
+        pictureQ['altitude'] = 32.5
+        pictureQ['pic'] = encoded_data
+
+        pictureQ = json.dumps(pictureQ)
+        send_data_to_msw(data_topic, pictureQ)
+        pictureQ = json.loads(pictureQ)
+
+    except (TypeError, ValueError):
+        cartridge_init()
+    except:
+        print('[lib_acoustic.iot.pub_image]: error')
+
+def Tobase64(filepath):
     if filepath:
         f = open(filepath, "rb")
         enc = base64.b64encode(f.read())
         f.close()
         return str(enc)[2:-1]
 
-def pub_image(filepath):
-    data_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][0]
-    encoded_data = wavTobase64(filepath)
-    lib_mqtt_client.publish(data_topic, encoded_data)
+def send_data_to_msw(data_topic, obj_data):
+    global lib_mqtt_client
+
+    lib_mqtt_client.publish(data_topic, obj_data)
+
+def clearPictures():
+    os.system('rm -rfv /home/pi/Pictures/*')
 
 if __name__ == '__main__':
     global missionPort
     global mqtt_received
-    global cellStatus
     global cellNum
 
     
@@ -173,8 +226,7 @@ if __name__ == '__main__':
     try:
         lib = dict()
         with open(my_lib_name + '.json', 'r') as f:
-            lib = json.load(f)
-            
+            lib = json.dumps(f, indent=4)
             lib = json.loads(lib)
     except:
         lib = dict()
@@ -182,8 +234,8 @@ if __name__ == '__main__':
         lib["target"] = 'armv6'
         lib["description"] = "[name] [portnum] [baudrate]"
         lib["scripts"] = './' + my_lib_name + ' /dev/ttyUSB3 115200'
-        lib["data"] = ['LTE']
-        lib["control"] = ['test']
+        lib["data"] = ['']
+        lib["control"] = ['']
         lib = json.dumps(lib, indent=4)
         lib = json.loads(lib)
 
@@ -212,11 +264,12 @@ if __name__ == '__main__':
     while 1:
         if mqtt_received:
             #print(cellStatus, cellNum)
-            cellCmd(cellStatus, cellNum)
-            scheduler.enter(0, 1, usbCam)
-            scheduler.enter(5, 1, usbCam)
-            scheduler.enter(10, 1, usbCam)
+            DropDevice(cellNum)
+            scheduler.enter(0, 1, usbCam, argument=(1))
+            scheduler.enter(5, 1, usbCam, argument=(2))
+            scheduler.enter(10, 1, usbCam, argument=(3))
             scheduler.run()
+            clearPictures()
             mqtt_received = False
             
     missionPortClose()

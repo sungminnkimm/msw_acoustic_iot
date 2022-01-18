@@ -4,9 +4,9 @@
     "description": "[name] [portnum] [baudrate]",
     "scripts": "./lib_acoustic_iot /dev/ttyUSB3 115200",
     "data": [
-        "DropPic"
+        "toGCS"
     ],
     "control": [
-        "CartridgeCmd"
+        "toUAV"
     ]
 }
