@@ -6,7 +6,7 @@ import time, datetime, base64, requests
 import sched
 
 
-scheduler = sched.scheduler(time.time, time.sleep())
+scheduler = sched.scheduler(time.time, time.sleep)
 i_pid = os.getpid()
 argv = sys.argv
 
@@ -58,9 +58,11 @@ def on_message(client, userdata, msg):
     print("[lib_acoustic_iot]: mqtt msg received")
     #print(str(msg.payload.decode("utf-8")))
     missionCmd = str(msg.payload.decode("utf-8"))
+
     cellStatus = missionCmd[:2]
     cellNum = missionCmd[3]
     print(missionCmd)
+
     mqtt_received = True
     
     
@@ -117,11 +119,6 @@ def missionPortError(err):
     print('[missionPort error]: ', err)
     os.kill(i_pid, signal.SIGKILL)
 
-# def send_data_to_msw (data_topic, obj_data):
-#     global lib_mqtt_client
-
-#     lib_mqtt_client.publish(data_topic, obj_data)
-
 def cellCmd(status, num):
     global missionPort
     global cellQ
@@ -137,8 +134,9 @@ def cellCmd(status, num):
     print(cellQ)
 
 def usbCam(filepath):
-    print("[lib_acoustic_iot]: USB Camera activated")
+    global lib_mqtt_client
 
+    print("[lib_acoustic_iot]: USB Camera activated")
     os.system('pkill gpicview')
     directory = '~/Pictures/'
     now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
@@ -146,38 +144,20 @@ def usbCam(filepath):
     cmd = "fswebcam -r 1280x720 --no-banner " + filepath
     os.system(cmd)
     os.system('gpicview ' + filepath + ' &')
+    pub_image(filepath)
 
-# def wavTobase64(filepath):
-#     #print(">> wavTobase64() is called")
-#     if filepath:
-#         f = open(filepath, "rb")
-#         enc = base64.b64encode(f.read())
-#         f.close()
-#         #print("file exists")
-#         return str(enc)[2:-1]
 
-# def send_image_data_to_Mobius(url, con_image, timestamp):
-#     t = datetime.datetime.fromtimestamp(timestamp)
-#     #print("timestamp: ", timestamp, "t: ", t)
-#     now = t.strftime('%Y%m%dT%H%M%S')
-#     filename = '/home/pi/offline_acousticIoT/images/' + now + '.jpg'
-#     encoded_data = wavTobase64(filename)
-#     post_to_Mobius(url, con_image, encoded_data)
+def wavTobase64(filepath):
+    if filepath:
+        f = open(filepath, "rb")
+        enc = base64.b64encode(f.read())
+        f.close()
+        return str(enc)[2:-1]
 
-# def post_to_Mobius(url, con, encoded_data):
-#     print(">> post_to_Mobius(",url,",",con,") is called")
-#     url = url_Mobius + '/Mobius/raspberryPi/'+ con
-#     payload = """{
-#         "m2m:cin":{
-#             "con":{
-#                 "data": "%s"
-#              }
-#          }
-#     }"""%(encoded_data)
-#     #print("payload: ", payload)
-#     #response = requests.request("POST", url, headers=headers, data=str(payload))
-#     #print(response.text)
-#     requests.request("POST", url, headers=headers, data=str(payload))
+def pub_image(filepath):
+    data_topic = '/MUV/data/' + lib["name"] + '/' + lib["data"][0]
+    encoded_data = wavTobase64(filepath)
+    lib_mqtt_client.publish(data_topic, encoded_data)
 
 if __name__ == '__main__':
     global missionPort
