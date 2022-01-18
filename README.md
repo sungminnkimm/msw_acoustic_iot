@@ -1,4 +1,5 @@
-# msw_lgu_lte
+# msw_acoustic_iot
+#### based on repo IoTKETI/msw_lgu_lte
 
 ## Install dependencies
 ### MQTT-broker
