@@ -51,8 +51,8 @@ try {
 catch (e) {
     config.sortie_name = '';
     config.directory_name = '';
-    config.gcs = 'KETI_MUV';
-    config.drone = 'FC_MUV_01';
+    config.gcs = 'UTM_UVARC';
+    config.drone = 'ACOU_IOT_01';
     config.lib = [];
 }
 
@@ -68,8 +68,8 @@ catch (e) {
         target: 'armv6',
         description: "[name] [portnum] [baudrate]",
         scripts: './lib_acoustic_iot /dev/ttyUSB3 115200',
-        data: ['DropPic'],
-        control: ['CatridgeCmd']
+        data: ['toGCS'],
+        control: ['toUAV']
     };
     config.lib.push(add_lib);
 }
@@ -128,8 +128,8 @@ function runLib(obj_lib) {
 
 //         var run_lib = spawn('sudo', scripts_arr.slice(0));
 //        var run_lib = spawn(scripts_arr[0], scripts_arr.slice(1));
-        console.log('python3', [scripts_arr[0]+'.py', '/dev/ttyUSB1', '115200']);
-        var run_lib = spawn('python3', [scripts_arr[0]+'.py', '/dev/ttyUSB1', '115200']);
+        console.log('python3', [scripts_arr[0]+'.py', '/dev/ttyUSB3', '115200']);
+        var run_lib = spawn('python3', [scripts_arr[0]+'.py', '/dev/ttyUSB3', '115200']);
 //         var run_lib = spawn('python3', [scripts_arr[0]+'.py']);
         
         run_lib.stdout.on('data', function(data) {
@@ -299,7 +299,7 @@ function parseFcData(topic, str_message) {
     // User define Code --> send FcData to mission library
     var topic_arr = topic.split('/');
     if(topic_arr[topic_arr.length-1] == 'global_position_int') {
-        var _topic = '/MUV/control/' + config.lib[0].name + '/' + config.lib[1].control[1]; // 'Req_enc'
+        var _topic = '/MUV/control/' + config.lib[0].name + '/' + 'global_position_int'; // 'Req_enc'
         msw_mqtt_client.publish(_topic, str_message);
     }
     ///////////////////////////////////////////////////////////////////////
