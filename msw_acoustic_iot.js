@@ -297,10 +297,10 @@ function parseControlMission(topic, str_message) {
 
 function parseFcData(topic, str_message) {
     // User define Code --> send FcData to mission library
-    var topic_arr = topic.split('/');
-    if(topic_arr[topic_arr.length-1] == 'global_position_int') {
-        var _topic = '/MUV/control/' + config.lib[0].name + '/' + 'global_position_int'; // 'Req_enc'
-        msw_mqtt_client.publish(_topic, str_message);
-    }
+    // var topic_arr = topic.split('/');
+    // if(topic_arr[topic_arr.length-1] == 'global_position_int') {
+    //     var _topic = '/MUV/control/' + config.lib[0].name + '/' + 'global_position_int'; // 'Req_enc'
+    //     msw_mqtt_client.publish(_topic, str_message);
+    // }
     ///////////////////////////////////////////////////////////////////////
 }
