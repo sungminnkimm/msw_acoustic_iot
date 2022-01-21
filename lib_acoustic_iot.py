@@ -13,6 +13,8 @@ argv = sys.argv
 
 cellQ = {}
 pictureQ = {}
+position_data_count = 0
+control_data_count = 0
 
 # url_Mobius = 'http://[64:FF9B::CBFD:80AC]:7579'
 
@@ -76,17 +78,22 @@ def on_message(client, userdata, msg):
     global position_data_topic
     global missionControl
     global positionData
+    global control_data_count
+    global position_data_count
+
 
     mqtt_msg = str(msg.payload.decode("utf-8"))
 
     if msg.topic == control_topic:
-        print("[mission library, on_message]: mqtt msg received from " + control_topic)
+        control_data_count += 1
+        print("[mission library, on_message, " + control_data_count + "]: mqtt msg received from " + control_topic)
         missionControl = mqtt_msg
         # print(missionControl)
         mqtt_received = True
 
     elif msg.topic == position_data_topic:
-        print("[mission library, on_message]: mqtt msg received from " + position_data_topic)
+        position_data_count += 1
+        print("[mission library, on_message, " + position_data_count + "]: mqtt msg received from " + position_data_topic)
         positionData = mqtt_msg
         # parsePositionData(positionData)
         print(positionData)
@@ -149,7 +156,7 @@ def parsePositionData(data):
 
     try:
         positionObj = json.loads(data)
-        if positionObj['lat'] & positionObj['lon'] & positionObj['alt']:
+        if (('lat' in positionObj) and ('lon' in positionObj) and ('alt' in positionObj)):
             '''
             fc.global_position_int = {};
             fc.global_position_int.time_boot_ms = 123456789;
@@ -161,9 +168,10 @@ def parsePositionData(data):
             fc.global_position_int.vz = 0;
             fc.global_position_int.hdg = 65535;
             '''
-            pictureQ['lat'] = positionObj['lat']
-            pictureQ['lon'] = positionObj['lon']
-            pictureQ['alt'] = positionObj['alt']
+            pictureQ['longitude'] = positionObj['lat']
+            pictureQ['latitude'] = positionObj['lon']
+            pictureQ['altitude'] = positionObj['alt']
+            print(pictureQ['longitude'], pictureQ['latitude'], pictureQ['altitude'])
         else:
             print('[mission library, parseControlData]: positionData missing')
 
@@ -213,13 +221,13 @@ def DropDevice(num):
 
         serialCmd = cellQ[cellid] + cellid + '\r\n'
 
-        if len(serialCmd) == 10: #OP0101\r\n
+        if len(serialCmd) == 8: #OP0101\r\n
             missionPort.write(serialCmd.encode())
-        elif len(serialCmd) != 10:
-            print('[mission library, DropDevice] Error: cartridge control cmd not valid type')
+        elif len(serialCmd) != 8:
+            print('[mission library, DropDevice]: cartridge control cmd length invalid')
 
     except (TypeError, ValueError):
-        print('[mission library, DropDevice] Error: cartridge control cmd not valid type')
+        print('[mission library, DropDevice] Error: cartridge control cmd invalid')
 
 def usbCam(count):
 

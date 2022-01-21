@@ -52,7 +52,7 @@ catch (e) {
     config.sortie_name = '';
     config.directory_name = '';
     config.gcs = 'UTM_UVARC';
-    config.drone = 'ACOU_IOT_01';
+    config.drone = 'ACOU_IOT_TESTNAME';
     config.lib = [];
 }
 
@@ -259,12 +259,12 @@ setTimeout(init, 1000);
 function parseDataMission(topic, str_message) {
     try {
         // User define Code
-        //var obj_lib_data = JSON.parse(str_message);
+        var obj_lib_data = JSON.parse(str_message);
 
-        if(fc.hasOwnProperty('global_position_int')) {
-            Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
-        }
-        //str_message = JSON.stringify(obj_lib_data);
+        // if(fc.hasOwnProperty('global_position_int')) {
+        //     Object.assign(obj_lib_data, JSON.parse(JSON.stringify(fc['global_position_int'])));
+        // }
+        str_message = JSON.stringify(obj_lib_data);
         
 
         ///////////////////////////////////////////////////////////////////////
