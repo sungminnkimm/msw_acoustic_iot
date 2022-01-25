@@ -16,15 +16,6 @@ pictureQ = {}
 position_data_count = 0
 control_data_count = 0
 
-# url_Mobius = 'http://[64:FF9B::CBFD:80AC]:7579'
-
-# headers = {
-#    'Accept': 'application/json',
-#    'X-M2M-RI': '123sdfg45',
-#    'X-M2M-Origin': 'S20170717074825768bp21',
-#    'Content-Type': 'application/json; ty=4'
-# }
-
 #open OP0101\r\n close CL0101\r\n
 def cartridge_init():
     global cellQ
@@ -95,7 +86,7 @@ def on_message(client, userdata, msg):
         position_data_count += 1
         print("[mission library, on_message, " + position_data_count + "]: mqtt msg received from " + position_data_topic)
         positionData = mqtt_msg
-        # parsePositionData(positionData)
+        parsePositionData(positionData)
         print(positionData)
     
 def on_subscribe(client, userdata, mid, granted_qos):
@@ -168,9 +159,12 @@ def parsePositionData(data):
             fc.global_position_int.vz = 0;
             fc.global_position_int.hdg = 65535;
             '''
-            pictureQ['longitude'] = positionObj['lat']
-            pictureQ['latitude'] = positionObj['lon']
-            pictureQ['altitude'] = positionObj['alt']
+            toFloatNum = 0.0000001
+            pictureQ['longitude'] = round(toFloatNum * positionObj['lat'], 5)
+            pictureQ['latitude'] = round(toFloatNum * positionObj['lon'], 5)
+            pictureQ['altitude'] = round(toFloatNum * positionObj['alt'], 5)
+
+            print(positionObj['lon'], positionObj['lat'], positionObj['alt'])
             print(pictureQ['longitude'], pictureQ['latitude'], pictureQ['altitude'])
         else:
             print('[mission library, parseControlData]: positionData missing')
@@ -335,14 +329,18 @@ if __name__ == '__main__':
     
     missionPortOpening(missionPortNum, missionBaudrate)
     
+    firstTake = 0
+    secondTake = firstTake + 5
+    thirdTake = secondTake + 5
+
     while 1:
         if mqtt_received:
             #print(cellStatus, cellNum)
             cellNum = parseControlData(missionControl)
             DropDevice(cellNum)
-            scheduler.enter(0, 1, usbCam, argument=('1'))
-            scheduler.enter(5, 1, usbCam, argument=('2'))
-            scheduler.enter(10, 1, usbCam, argument=('3'))
+            scheduler.enter(firstTake, 1, usbCam, argument=('1'))
+            scheduler.enter(secondTake, 1, usbCam, argument=('2'))
+            scheduler.enter(thirdTake, 1, usbCam, argument=('3'))
             scheduler.run()
             clearPictures()
             mqtt_received = False
