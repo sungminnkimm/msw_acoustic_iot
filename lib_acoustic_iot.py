@@ -63,8 +63,6 @@ def on_disconnect(client, userdata, flags, rc=0):
 
 def on_message(client, userdata, msg):
     global mqtt_received
-    # global missisonCmd
-    # global cellStatus
     global control_topic
     global position_data_topic
     global missionControl
@@ -77,17 +75,17 @@ def on_message(client, userdata, msg):
 
     if msg.topic == control_topic:
         control_data_count += 1
-        print("[mission library, on_message, " + control_data_count + "]: mqtt msg received from " + control_topic)
+        print("[mission library, on_message, " + str(control_data_count) + "]: mqtt msg received from " + control_topic)
         missionControl = mqtt_msg
         # print(missionControl)
         mqtt_received = True
 
     elif msg.topic == position_data_topic:
         position_data_count += 1
-        print("[mission library, on_message, " + position_data_count + "]: mqtt msg received from " + position_data_topic)
+        # print("[mission library, on_message, " + str(position_data_count) + "]: mqtt msg received from " + position_data_topic)
         positionData = mqtt_msg
         parsePositionData(positionData)
-        print(positionData)
+        # print(positionData)
     
 def on_subscribe(client, userdata, mid, granted_qos):
     print("[mission library, on_subscribed]: " + str(mid) + " " + str(granted_qos))
@@ -164,15 +162,15 @@ def parsePositionData(data):
             pictureQ['latitude'] = round(toFloatNum * positionObj['lon'], 5)
             pictureQ['altitude'] = round(toFloatNum * positionObj['alt'], 5)
 
-            print(positionObj['lon'], positionObj['lat'], positionObj['alt'])
-            print(pictureQ['longitude'], pictureQ['latitude'], pictureQ['altitude'])
+            # print(positionObj['lon'], positionObj['lat'], positionObj['alt'])
+            # print(pictureQ['longitude'], pictureQ['latitude'], pictureQ['altitude'])
         else:
             print('[mission library, parseControlData]: positionData missing')
 
     except (TypeError, ValueError):
         print('[mission library, parseControlData] Error: posigionData not valid')
 
-    print(data)
+    # print(data)
 
 def parseControlData(controlMsg):
     
