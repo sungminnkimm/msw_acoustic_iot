@@ -235,7 +235,7 @@ def usbCam(count):
 
     now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
     filepath = directory + now + '.jpg'
-    cmd = "fswebcam -r 1280x720 --no-banner " + filepath
+    cmd = "fswebcam -r 1280x720 -F 10 --no-banner " + filepath
     os.system(cmd)
     #os.system('gpicview ' + filepath + ' &')
     pub_image(filepath, count)
